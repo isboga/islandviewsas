@@ -560,3 +560,42 @@ body:has(.attribute-table:not(.hidden)) .legend{bottom:258px}
   background:#fff;border-right:1px solid #007ac2;border-bottom:1px solid #007ac2;
   transform:translateX(-50%) rotate(45deg)
 }
+
+/* === Project product upload center === */
+.upload-product-button{border-color:#007ac2!important;color:#00619b!important;font-weight:600}
+.product-upload-modal{z-index:120}
+.upload-card{width:min(760px,calc(100vw - 30px));height:auto;max-height:min(760px,calc(100vh - 70px));background:#fff;color:#333}
+.upload-progress{height:3px;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#eee}
+.upload-progress i{display:block;background:#ddd}.upload-progress i.active{background:#007ac2}
+.upload-body{padding:18px 20px;overflow:auto;min-height:390px}
+.upload-step{max-width:680px;margin:auto}
+.step-kicker{font-size:9px;font-weight:700;letter-spacing:.09em;color:#007ac2;margin-bottom:5px}
+.upload-step h3{font-size:18px;font-weight:500;margin:0 0 6px;color:#222}
+.upload-step>p{font-size:11px;line-height:1.5;color:#666;margin:0 0 18px}
+.upload-step label{display:grid;gap:5px;font-size:10px;color:#555;margin-bottom:12px}
+.upload-subpanel{padding:12px;background:#f7f7f7;border:1px solid #ddd;margin-top:10px}
+.product-type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}
+.product-type{display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto;text-align:left;padding:12px;border:1px solid #ccc;background:#fff;border-radius:2px;color:#333}
+.product-type:hover{border-color:#888;background:#f8f8f8}.product-type.selected{border:2px solid #007ac2;padding:11px;background:#f3f8fb}
+.product-type-icon{grid-row:1/3;width:30px;height:30px;display:grid;place-items:center;background:#eef3f6;color:#00619b;font-size:11px;font-weight:700}
+.product-type strong{font-size:11px;font-weight:600}.product-type small{font-size:9px;color:#777;margin-top:3px}
+.recommendation{padding:9px 11px;margin:12px 0;background:#eef6fb;border-left:3px solid #007ac2;font-size:10px;line-height:1.45}
+.source-options{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}
+.source-options label{display:flex;align-items:flex-start;gap:7px;padding:10px;border:1px solid #ddd;margin:0;background:#fff}
+.source-options span{display:grid;gap:3px}.source-options strong{font-size:10px}.source-options small,.source-help{font-size:9px;color:#777;line-height:1.4}
+.drop-zone{min-height:92px;place-items:center;border:1px dashed #999!important;background:#fafafa;padding:14px!important;text-align:center;cursor:pointer}
+.drop-zone input{max-width:100%;font-size:10px}.drop-zone span{font-size:10px;color:#555}
+.upload-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.upload-summary{display:grid;grid-template-columns:1fr 1fr;border:1px solid #ddd;margin:14px 0}
+.upload-summary>div{display:grid;gap:3px;padding:10px}.upload-summary>div+div{border-left:1px solid #ddd}
+.upload-summary small{font-size:8px;color:#777}.upload-summary strong{font-size:11px}
+.privacy-warning{font-size:9px;line-height:1.45;background:#fff7e5;border:1px solid #ead39b;padding:9px;color:#6d5727}
+.upload-footer{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid #ddd;background:#fafafa}
+.upload-footer span{flex:1;font-size:9px;color:#777}.upload-footer button{min-width:84px}.upload-error{color:#a33!important}
+.drawer-products{margin-top:18px;border-top:1px solid #ddd;padding-top:13px}
+.drawer-products h4{display:flex;justify-content:space-between;font-size:11px;margin:0 0 9px}.drawer-products h4 span{font-weight:400;color:#777}
+.product-group{margin-bottom:10px}.product-group>strong{display:block;font-size:9px;color:#777;text-transform:uppercase;margin-bottom:4px}
+.product-item{width:100%;display:grid;grid-template-columns:28px 1fr;gap:7px;text-align:left;padding:7px;border:0;border-top:1px solid #eee;background:#fff;color:#333}
+.product-item:hover{background:#f4f8fb}.product-item>span:first-child{width:26px;height:26px;display:grid;place-items:center;background:#eef3f6;color:#00619b;font-size:9px;font-weight:700}
+.product-item>span:last-child{display:grid;gap:2px}.product-item b{font-size:10px;font-weight:600}.product-item small{font-size:8px;color:#777}
+@media(max-width:650px){.product-type-grid,.source-options,.upload-form-grid,.upload-summary{grid-template-columns:1fr}.upload-summary>div+div{border-left:0;border-top:1px solid #ddd}.upload-body{padding:14px;min-height:360px}.source-options{gap:5px}}
