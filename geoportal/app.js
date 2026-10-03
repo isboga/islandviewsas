@@ -78,3 +78,21 @@ document.querySelectorAll("[data-export]").forEach(b=>b.onclick=async()=>{const 
  document.querySelector("#export-menu").classList.add("hidden");
 });
 map.on("style.load",()=>{setTimeout(()=>{ensureSketch();redraw()},0)});
+
+/* === Extended DroneDB / Potree workflow === */
+let identifyMode=false;
+document.querySelector("#btn-identify").onclick=()=>{identifyMode=!identifyMode;document.querySelector("#btn-identify").classList.toggle("active",identifyMode);map.getCanvas().classList.toggle("tool-crosshair",identifyMode)};
+document.querySelector("#btn-opacity").onclick=()=>document.querySelector("#opacity-card").classList.toggle("hidden");
+document.querySelector("#opacity-range").oninput=e=>{const v=Number(e.target.value)/100;document.querySelector("#opacity-value").textContent=e.target.value+"%";ddbNames.forEach(n=>{const id="ddb-"+safe(n);if(map.getLayer(id))map.setPaintProperty(id,"raster-opacity",v)})};
+map.on("click",async e=>{
+ if(!identifyMode)return;
+ const visible=ddbNames.filter(n=>{const id="ddb-"+safe(n);return map.getLayer(id)&&map.getLayoutProperty(id,"visibility")!=="none"});
+ const html='<div class="feature-popup"><b>Ubicación</b><br>'+e.lngLat.lat.toFixed(7)+', '+e.lngLat.lng.toFixed(7)+'<br><b>Capas DroneDB visibles</b><br>'+(visible.length?visible.join("<br>"):"Ninguna")+'</div>';
+ new maplibregl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(map);
+});
+const potreeModal=document.querySelector("#potree-modal"),potreeFrame=document.querySelector("#potree-frame");
+document.querySelector("#btn-potree").onclick=()=>{potreeFrame.src=DDB.hub+"?embed=1";potreeModal.classList.remove("hidden")};
+document.querySelector("#btn-potree-close").onclick=()=>{potreeModal.classList.add("hidden");potreeFrame.src=""};
+potreeModal.onclick=e=>{if(e.target===potreeModal){potreeModal.classList.add("hidden");potreeFrame.src=""}};
+function fitFeature(f){try{const b=turf.bbox(f);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:90,duration:700})}catch(e){}}
+map.on("dblclick",e=>{if(sketch.mode==="line"||sketch.mode==="polygon"){e.preventDefault();finishTool();if(sketch.active)fitFeature(sketch.active)}});
