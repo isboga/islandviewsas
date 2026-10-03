@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "notice": "Este archivo contiene únicamente metadatos autorizados para publicación pública. Los proyectos privados deben permanecer fuera del despliegue estático.",
+  "projects": [
+    {
+      "id": "magic-garden",
+      "name": "Magic Garden · Monitoreo ambiental",
+      "description": "Proyecto de monitoreo RPAS con productos RGB, térmicos y cartografía de seguimiento.",
+      "service": "Monitoreo ambiental",
+      "client": "Proyecto público",
+      "location": "San Andrés Isla",
+      "coordinates": [-81.721, 12.564],
+      "captureDate": "2026-09",
+      "methods": ["RPAS", "Fotogrametría", "Termografía"],
+      "equipment": ["DJI Matrice 4E", "D-RTK 3", "RPAS térmico"],
+      "products": ["Ortomosaico", "Termografía", "Nube de puntos"],
+      "crs": "WGS 84 / configuración por producto",
+      "access": "public",
+      "category": "monitoreo",
+      "links": []
+    },
+    {
+      "id": "lynval-cove",
+      "name": "Lynval / Cove · Fotogrametría",
+      "description": "Cobertura fotogramétrica para análisis territorial y generación de productos cartográficos.",
+      "service": "Fotogrametría",
+      "client": "Muestra pública",
+      "location": "Cove, San Andrés Isla",
+      "coordinates": [-81.724, 12.536],
+      "captureDate": "2026",
+      "methods": ["RPAS", "RTK", "Fotogrametría"],
+      "equipment": ["DJI Matrice 4E", "D-RTK 3"],
+      "products": ["Ortomosaico", "Modelo 3D", "Nube de puntos"],
+      "crs": "WGS 84 / configuración por producto",
+      "access": "public",
+      "category": "fotogrametria",
+      "links": []
+    },
+    {
+      "id": "modelo-demo",
+      "name": "Modelo 3D · Demostración web",
+      "description": "Modelo GLB liviano incluido en el repositorio para demostrar el visor 3D. No representa un producto privado.",
+      "service": "Modelos 3D",
+      "client": "Demostración",
+      "location": "Galería Island View",
+      "coordinates": [-81.7006, 12.5847],
+      "captureDate": "2026",
+      "methods": ["Modelo web GLB"],
+      "equipment": [],
+      "products": ["GLB"],
+      "crs": "No aplica al visor demostrativo",
+      "access": "public",
+      "category": "modelos-3d",
+      "model": {
+        "src": "../sitarbuckss.glb",
+        "format": "GLB",
+        "sizeMB": 0.18,
+        "scale": "Escala del archivo",
+        "ar": true
+      },
+      "links": []
+    }
+  ],
+  "privateProjects": []
+}
