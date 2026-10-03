@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "notes": [
+    "No almacenes tokens, claves o credenciales en este archivo.",
+    "Los ortomosaicos grandes deben publicarse como teselas optimizadas o mediante un endpoint externo compatible; no como GeoTIFF monolítico en GitHub Pages."
+  ],
+  "rasters": [
+    {
+      "id": "dronedb-sai",
+      "title": "DroneDB SAI",
+      "type": "wms",
+      "enabled": true,
+      "capabilities": "https://hub.dronedb.app/orgs/islan-view-sas/ds/sai/wms?service=WMS&request=GetCapabilities&version=1.3.0",
+      "baseUrl": "https://hub.dronedb.app/orgs/islan-view-sas/ds/sai/wms"
+    }
+  ],
+  "examples": {
+    "xyz": {"type":"xyz","url":"https://servidor-autorizado/{z}/{x}/{y}.png","enabled":false},
+    "wms": {"type":"wms","baseUrl":"https://servidor/wms","layer":"nombre_capa","enabled":false},
+    "wmts": {"type":"wmts","tileUrlTemplate":"https://servidor/wmts/.../{TileMatrix}/{TileRow}/{TileCol}","enabled":false}
+  }
+}
