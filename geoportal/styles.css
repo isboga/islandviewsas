@@ -401,3 +401,8 @@ footer span{font-size:9px;color:#777}
   .brand{padding:9px 14px}
   .panel{padding:13px 14px}
 }
+
+.workspace-hidden{display:none!important}
+body[data-workspace="catalog"] .sidebar{background:#fff}
+body[data-workspace="catalog"] .project-list{max-height:none}
+body[data-workspace="viewer"] .sidebar{background:#fff}
