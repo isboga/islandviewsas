@@ -23,7 +23,7 @@ const sketch={mode:null,coords:[],features:[],markers:[],active:null};
 function ensureSketch(){
  if(!map.getSource("iv-sketch")) map.addSource("iv-sketch",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
  if(!map.getLayer("iv-sketch-fill")) map.addLayer({id:"iv-sketch-fill",type:"fill",source:"iv-sketch",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#a7d82e","fill-opacity":.22}});
- if(!map.getLayer("iv-sketch-line")) map.addLayer({id:"iv-sketch-line",type:"line",source:"iv-sketch",filter:["in",["geometry-type"],["literal",["LineString","Polygon"]]],paint:{"line-color":"#d8ff77","line-width":3}});
+ if(!map.getLayer("iv-sketch-line")) map.addLayer({id:"iv-sketch-line",type:"line",source:"iv-sketch",filter:["match",["geometry-type"],["LineString","Polygon"],true,false],paint:{"line-color":"#d8ff77","line-width":3}});
  if(!map.getLayer("iv-sketch-point")) map.addLayer({id:"iv-sketch-point",type:"circle",source:"iv-sketch",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":["case",["==",["get","active"],true],8,6],"circle-color":["case",["==",["get","active"],true],"#ffffff","#a7d82e"],"circle-stroke-color":["case",["==",["get","active"],true],"#a7d82e","#ffffff"],"circle-stroke-width":3}});
  if(!map.getLayer("iv-sketch-vertex-label")) map.addLayer({id:"iv-sketch-vertex-label",type:"symbol",source:"iv-sketch",filter:["==",["get","kind"],"vertex"],layout:{"text-field":["to-string",["get","vertex"]],"text-size":11,"text-offset":[0,-1.35],"text-allow-overlap":true},paint:{"text-color":"#ffffff","text-halo-color":"#06151b","text-halo-width":2}});
 }
@@ -33,6 +33,7 @@ function redraw(){
  const vertices=sketch.coords.map((coord,i)=>turf.point(coord,{kind:"vertex",vertex:i+1,active:i===sketch.coords.length-1}));
  map.getSource("iv-sketch").setData({type:"FeatureCollection",features:[...sketch.features,...(live?[live]:[]),...vertices]});
  renderVertexLabels();
+ if(window.ivRenderResults) window.ivRenderResults(sketch.features,sketch.active);
 }
 function renderVertexLabels(){
  const count=sketch.coords.length;
@@ -56,8 +57,8 @@ document.querySelectorAll(".ortho-tools [data-tool]").forEach(b=>b.onclick=()=>a
 map.on("click",e=>{
  if(!sketch.mode)return;
  const xy=[e.lngLat.lng,e.lngLat.lat];
- if(sketch.mode==="point"){const f=turf.point(xy,{name:"Geoposición",lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addCoordMarker(xy);finishTool();return}
- if(sketch.mode==="note"){const note=prompt("Texto de la anotación:","Observación");if(note!==null){const f=turf.point(xy,{name:"Anotación",note,lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addNoteMarker(xy,note);finishTool()}return}
+ if(sketch.mode==="point"){const f=turf.point(xy,{name:"Geoposición",lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addCoordMarker(xy);updateMeasure(f);finishTool();return}
+ if(sketch.mode==="note"){const note=prompt("Texto de la anotación:","Observación");if(note!==null){const f=turf.point(xy,{name:"Anotación",note,lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addNoteMarker(xy,note);updateMeasure(f);finishTool()}return}
  sketch.coords.push(xy);redraw();updateMeasure(liveFeature());renderVertexLabels();
 });
 function finishTool(){
@@ -108,3 +109,5 @@ document.querySelector("#btn-potree-close").onclick=()=>{potreeModal.classList.a
 potreeModal.onclick=e=>{if(e.target===potreeModal){potreeModal.classList.add("hidden");potreeFrame.src=""}};
 function fitFeature(f){try{const b=turf.bbox(f);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:90,duration:700})}catch(e){}}
 map.on("dblclick",e=>{if(sketch.mode==="line"||sketch.mode==="polygon"){e.preventDefault();finishTool();if(sketch.active)fitFeature(sketch.active)}});
+
+window.IVGeo={map,sketch,redraw,activateTool,finishTool,updateMeasure,fitFeature,dl,kml};
