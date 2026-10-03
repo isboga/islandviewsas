@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Island View Geoportal</title>
+  <meta name="description" content="Geoportal geoespacial de Island View SAS para visualización de ortomosaicos, capas GIS, modelos 3D y monitoreo territorial." />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">IV</div>
+        <div>
+          <h1>Island View Geoportal</h1>
+          <p>RPAS · GIS · 3D · Monitoreo</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <h2>Capas</h2>
+        <label><input id="toggle-buildings" type="checkbox" checked> Huellas de edificaciones demo</label>
+        <label><input id="toggle-risk" type="checkbox" checked> Zonas de interés / riesgo demo</label>
+        <label><input id="toggle-points" type="checkbox" checked> Proyectos Island View</label>
+      </section>
+
+      <section class="panel">
+        <h2>Productos RPAS</h2>
+        <div class="status-card">
+          <strong>DroneDB</strong>
+          <span>Listo para conectar WMS / XYZ / tiles.</span>
+        </div>
+        <div class="status-card">
+          <strong>GeoServer / PostGIS</strong>
+          <span>Preparado como backend futuro para capas vectoriales y servicios OGC.</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Herramientas</h2>
+        <button id="btn-home">Vista San Andrés</button>
+        <button id="btn-style">Cambiar mapa base</button>
+      </section>
+
+      <footer>
+        <span>Island View SAS</span>
+        <small>San Andrés, Colombia</small>
+      </footer>
+    </aside>
+
+    <main class="map-wrap">
+      <div class="topbar">
+        <div>
+          <strong>Visor territorial</strong>
+          <span id="coords">12.58, -81.70</span>
+        </div>
+        <div class="badge">Demo operativa</div>
+      </div>
+      <div id="map"></div>
+      <div class="legend">
+        <div><span class="swatch buildings"></span> Edificaciones</div>
+        <div><span class="swatch risk"></span> Zonas de interés</div>
+        <div><span class="swatch projects"></span> Proyectos</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
