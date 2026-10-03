@@ -7,7 +7,7 @@
 <section class="panel"><h2>Herramientas</h2><div class="tool-grid"><button id="btn-home">⌂ Inicio</button><button id="btn-style">◫ Base</button><button id="btn-3d">◭ 3D</button><button id="btn-clear">× Limpiar</button></div></section>
 <footer><strong>ISLAND VIEW S.A.S.</strong><span>Fotogrametría · GIS · LiDAR · Inspección</span></footer>
 </aside>
-<main class="map-wrap"><div id="map"></div><header class="topbar"><div class="glass"><strong>San Andrés · Visor territorial</strong><span id="coords">12.58470, -81.70060</span></div><div class="top-actions"><span class="live">● ONLINE</span></div></header>
+<main class="map-wrap"><div id="map" tabindex="0" role="application" aria-label="Visor geográfico interactivo de Island View SAS"></div><header class="topbar"><div class="glass"><strong>San Andrés · Visor territorial</strong><span id="coords">12.58470, -81.70060</span></div><div class="top-actions"><span class="live">● ONLINE</span></div></header>
 <div class="ortho-tools">
   <button data-tool="line" title="Medir distancia">↗<span>Distancia</span></button>
   <button data-tool="polygon" title="Medir área">⬡<span>Área</span></button>
@@ -29,4 +29,4 @@
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://unpkg.com/shp-write@0.3.2/shpwrite.js"></script>
-<script src="./app.js"></script></body></html>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>\n<script src="./app.js"></script>\n<script src="./portal.js"></script></body></html>
