@@ -406,3 +406,140 @@ footer span{font-size:9px;color:#777}
 body[data-workspace="catalog"] .sidebar{background:#fff}
 body[data-workspace="catalog"] .project-list{max-height:none}
 body[data-workspace="viewer"] .sidebar{background:#fff}
+
+/* === GIS desktop workspace: app bar, navigation rail, drawer, table === */
+.gis-appbar{
+  position:fixed;inset:0 0 auto 0;height:48px;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 10px;background:#fff;border-bottom:1px solid #c9c9c9;
+  color:#2b2b2b;box-shadow:0 1px 2px rgba(0,0,0,.08)
+}
+.appbar-left,.appbar-actions{display:flex;align-items:center;gap:6px}
+.appbar-title{display:flex;align-items:baseline;gap:9px;min-width:0}
+.appbar-title strong{font-size:14px;font-weight:600;white-space:nowrap}
+.appbar-title span{font-size:10px;color:#777;white-space:nowrap}
+.icon-button,.appbar-button{
+  height:32px;border:1px solid transparent;background:transparent;border-radius:2px;
+  color:#444;padding:0 9px;font-size:11px
+}
+.icon-button{width:34px;padding:0;font-size:17px}
+.icon-button:hover,.appbar-button:hover{background:#f1f1f1;border-color:#ddd}
+.app-shell{height:calc(100% - 48px);margin-top:48px;transition:grid-template-columns .18s ease}
+body.sidebar-collapsed .app-shell{grid-template-columns:0 1fr}
+body.sidebar-collapsed .sidebar{opacity:0;pointer-events:none;overflow:hidden;transform:translateX(-100%)}
+.sidebar{transition:opacity .15s ease,transform .18s ease}
+.gis-rail{
+  position:absolute;left:10px;top:58px;z-index:7;
+  display:none;flex-direction:column;background:#fff;border:1px solid #c7c7c7;
+  box-shadow:0 1px 4px rgba(0,0,0,.16)
+}
+body.sidebar-collapsed .gis-rail{display:flex}
+.gis-rail button{
+  width:38px;height:38px;padding:0;border:0;border-bottom:1px solid #e5e5e5;
+  border-radius:0;background:#fff;color:#444;font-size:10px;font-weight:600
+}
+.gis-rail button:last-child{border-bottom:0}
+.gis-rail button:hover{background:#eef6fb;color:#00619b}
+.basemap-gallery{
+  position:absolute;right:12px;top:58px;z-index:8;width:270px;
+  background:#fff;border:1px solid #bbb;box-shadow:0 3px 12px rgba(0,0,0,.18);
+  color:#333
+}
+.floating-head,.drawer-head,.attribute-head{
+  min-height:42px;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;border-bottom:1px solid #ddd;background:#fafafa
+}
+.floating-head strong,.drawer-head strong,.attribute-head strong{font-size:12px;font-weight:600}
+.floating-head button,.drawer-head button,.attribute-head>button{
+  border:0;background:transparent;font-size:18px;padding:3px 7px
+}
+.basemap-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px}
+.basemap-card{
+  display:flex;flex-direction:column;align-items:stretch;gap:4px;
+  padding:5px;background:#fff;border:1px solid #ccc;text-align:left
+}
+.basemap-card:hover{border-color:#888;background:#fff}
+.basemap-card.active{border:2px solid #007ac2;padding:4px}
+.basemap-card strong{font-size:10px;font-weight:600}
+.basemap-card small{font-size:8px;color:#777}
+.basemap-preview{display:block;height:70px;border:1px solid #ddd;background-size:cover}
+.satellite-preview{
+  background:
+    linear-gradient(135deg,rgba(34,74,48,.2),rgba(77,116,142,.12)),
+    radial-gradient(circle at 30% 30%,#7e9b65 0 13%,transparent 14%),
+    radial-gradient(circle at 70% 60%,#597c58 0 18%,transparent 19%),
+    linear-gradient(145deg,#9bb3b9,#637e70 55%,#456b80)
+}
+.osm-preview{
+  background:
+    linear-gradient(32deg,transparent 46%,#fff 47% 51%,#c6c6c6 52% 53%,transparent 54%),
+    linear-gradient(118deg,transparent 40%,#fff 41% 46%,#c6c6c6 47% 48%,transparent 49%),
+    #e8e4d9
+}
+.project-drawer{
+  position:absolute;z-index:9;right:12px;top:58px;bottom:18px;width:330px;
+  background:#fff;border:1px solid #bbb;box-shadow:0 3px 14px rgba(0,0,0,.18);
+  color:#333;display:flex;flex-direction:column
+}
+.drawer-head>div{display:flex;flex-direction:column;gap:2px}
+.drawer-head small{font-size:8px;color:#777;letter-spacing:.08em}
+.drawer-body{padding:14px;overflow:auto}
+.drawer-description{font-size:11px;line-height:1.55;color:#555;margin:0 0 15px}
+.drawer-meta{margin:0}
+.drawer-meta>div{padding:9px 0;border-top:1px solid #e6e6e6}
+.drawer-meta>div:last-child{border-bottom:1px solid #e6e6e6}
+.drawer-meta dt{font-size:9px;color:#777;margin-bottom:3px}
+.drawer-meta dd{font-size:11px;color:#333;margin:0;line-height:1.4}
+.drawer-actions{display:grid;gap:6px;margin-top:15px}
+.attribute-table{
+  position:absolute;z-index:8;left:0;right:0;bottom:0;height:245px;
+  background:#fff;border-top:1px solid #aaa;box-shadow:0 -2px 8px rgba(0,0,0,.14);
+  color:#333;display:flex;flex-direction:column
+}
+.attribute-head{padding:5px 8px;min-height:42px}
+.attribute-head>div{display:flex;align-items:center;gap:18px}
+.attribute-tabs{display:flex;height:31px}
+.attribute-tabs button{
+  border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;
+  color:#555;font-size:10px;padding:5px 8px
+}
+.attribute-tabs button.active{border-bottom-color:#007ac2;color:#005e95;background:#f4f8fb}
+.attribute-tabs span{display:inline-block;min-width:16px;margin-left:3px;padding:1px 4px;border-radius:8px;background:#eee;color:#666;font-size:8px}
+.attribute-scroll{overflow:auto;flex:1}
+.attribute-table table{width:100%;border-collapse:collapse;font-size:10px}
+.attribute-table th{
+  position:sticky;top:0;z-index:1;background:#f4f4f4;color:#555;text-align:left;
+  padding:7px 9px;border-right:1px solid #ddd;border-bottom:1px solid #ccc;font-weight:600
+}
+.attribute-table td{padding:6px 9px;border-right:1px solid #eee;border-bottom:1px solid #eee;white-space:nowrap}
+.attribute-table tbody tr:hover{background:#eef6fb}
+.table-link{border:0;background:transparent;color:#00619b;padding:0;font-size:10px;text-align:left}
+.table-link:hover{background:transparent;text-decoration:underline}
+body:has(.attribute-table:not(.hidden)) .measure-card{bottom:260px}
+body:has(.attribute-table:not(.hidden)) .legend{bottom:258px}
+@media(max-width:900px){
+  .appbar-title span{display:none}
+  .appbar-button{padding:0 7px}
+  .project-drawer{width:300px;right:8px;top:54px;bottom:8px}
+  .attribute-table{height:220px}
+  body:has(.attribute-table:not(.hidden)) .measure-card{bottom:232px}
+  .basemap-gallery{right:8px;top:54px}
+}
+@media(max-width:800px){
+  .app-shell{height:calc(100% - 48px);margin-top:48px}
+  body.sidebar-collapsed .sidebar{display:none}
+  body.sidebar-collapsed .topbar{left:12px}
+  .gis-rail{top:54px;left:8px}
+}
+@media(max-width:600px){
+  .gis-appbar{padding:0 6px}
+  .appbar-title strong{font-size:12px}
+  .appbar-actions{gap:2px}
+  .appbar-button{font-size:9px;padding:0 5px}
+  .project-drawer{left:8px;right:8px;width:auto;top:54px;bottom:8px}
+  .basemap-gallery{left:8px;right:8px;width:auto}
+  .attribute-table{height:210px}
+  .attribute-head>div{gap:7px}
+  .attribute-head>div>strong{display:none}
+  .attribute-table th,.attribute-table td{padding:6px 7px}
+}
