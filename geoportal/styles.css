@@ -6,3 +6,7 @@
 
 .secondary-wide{width:100%;margin-top:7px;background:rgba(167,216,46,.08);border-color:rgba(167,216,46,.25)}
 .opacity-card{position:absolute;z-index:7;top:82px;left:50%;transform:translateX(-50%);width:260px;background:rgba(5,20,26,.94);border:1px solid var(--line);border-radius:12px;padding:12px;backdrop-filter:blur(15px)}.opacity-card.hidden{display:none}.opacity-card label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:8px}.opacity-card input{width:100%}.potree-card{width:min(1400px,97vw)!important;height:min(900px,94vh)!important}.feature-popup{font-size:11px;line-height:1.5}.feature-popup b{color:#d8ff77}.tool-hint{position:absolute;z-index:6;top:76px;left:50%;transform:translateX(-50%);background:rgba(5,20,26,.92);border:1px solid var(--line);padding:7px 10px;border-radius:9px;font-size:10px;color:var(--muted)}
+
+/* Drawing vertices: high-visibility field mode */
+.ortho-tools button.active{box-shadow:0 0 0 2px rgba(167,216,46,.16),0 0 18px rgba(167,216,46,.18)}
+.maplibregl-canvas.tool-crosshair{cursor:crosshair!important}
