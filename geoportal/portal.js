@@ -17,6 +17,8 @@ function insertUI(){
  nav.after(catalog);
  const search=document.createElement("section");search.className="panel viewer-panel";search.innerHTML='<h2>Buscar en el visor</h2><div class="search-row"><input id="map-search" class="field" placeholder="Proyecto o lat, lng" aria-label="Buscar proyecto o coordenadas"><button id="map-search-btn" aria-label="Buscar">⌕</button></div><p class="help">Búsqueda local por proyectos publicados o coordenadas. No envía consultas a geocodificadores externos.</p>';
  catalog.after(search);
+ const rasterPanel=document.createElement("section");rasterPanel.className="panel viewer-panel";rasterPanel.innerHTML='<div class="panel-title"><h2>Capas configuradas</h2><span id="layer-registry-status" class="dot pending"></span></div><div id="configured-layers" class="layer-list"><div class="loading">Leyendo layers.json…</div></div>';
+ search.after(rasterPanel);
  const toolsPanel=qsa(".panel").find(p=>qs("h2",p)?.textContent==="Herramientas");
  if(toolsPanel){
    const extras=document.createElement("div");extras.className="portal-extra-tools";extras.innerHTML='<button id="btn-fullscreen">⛶ Pantalla</button><button id="btn-import">⇧ Cargar datos</button><input id="local-file" type="file" hidden accept=".geojson,.json,.kml,.gpx,.csv,application/geo+json"><button id="btn-edit">✥ Editar selección</button>';
@@ -128,6 +130,26 @@ function addImported(fc){
  else map.getSource(id).setData(state.imported);
  if(fc.features.length)fitFeature(fc);
 }
+async function loadLayerRegistry(){
+ const box=qs("#configured-layers"),dot=qs("#layer-registry-status");
+ try{
+  const r=await fetch("./layers.json",{cache:"no-cache"});if(!r.ok)throw Error("HTTP "+r.status);const data=await r.json();window.IV_LAYER_CONFIG=data;
+  const entries=data.rasters||[];box.innerHTML="";
+  for(const cfg of entries){
+   const row=document.createElement("label");row.className="layer-row";
+   if(cfg.type==="wms"&&!cfg.layer){row.innerHTML='<span>◫</span><span>'+esc(cfg.title||cfg.id)+'<small> · WMS por capacidades</small></span>';box.append(row);continue}
+   const id="cfg-"+String(cfg.id).replace(/[^a-z0-9_-]/gi,"-");
+   let tiles=[];
+   if(cfg.type==="xyz"&&cfg.url)tiles=[cfg.url];
+   if(cfg.type==="wmts"&&cfg.tileUrlTemplate)tiles=[cfg.tileUrlTemplate];
+   if(cfg.type==="wms"&&cfg.baseUrl&&cfg.layer)tiles=[cfg.baseUrl+"?service=WMS&version=1.1.1&request=GetMap&layers="+encodeURIComponent(cfg.layer)+"&styles=&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true"];
+   if(!cfg.enabled||!tiles.length)continue;
+   if(!map.getSource(id)){map.addSource(id,{type:"raster",tiles,tileSize:256,attribution:cfg.attribution||""});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":cfg.opacity??0.9}})}
+   row.innerHTML='<input type="checkbox"><span>'+esc(cfg.title||cfg.id)+'</span>';row.querySelector("input").onchange=e=>map.setLayoutProperty(id,"visibility",e.target.checked?"visible":"none");box.append(row);
+  }
+  if(!box.children.length)box.innerHTML='<div class="empty">No hay capas raster públicas activas.</div>';dot.className="dot ok";
+ }catch(e){box.innerHTML='<div class="error-state">No se pudo leer layers.json.</div>';dot.className="dot fail"}
+}
 function showDashboard(){
  openModal("Paneles de monitoreo","Datos de ejemplo · sustituir mediante projects.json / fuentes reales",'<div class="demo-banner">EJEMPLO — estos indicadores no son datos operativos reales.</div><div class="kpi-grid"><article><small>Misiones</small><strong>7</strong><span>Ejemplo</span></article><article><small>Cobertura</small><strong>7 ha</strong><span>Ejemplo</span></article><article><small>Productos</small><strong>14</strong><span>Ejemplo</span></article><article><small>Estado</small><strong>Activo</strong><span>Ejemplo</span></article></div><div class="dashboard-grid"><section><h3>Monitoreo térmico</h3><div class="spark-bars">'+[42,65,51,78,70,55,38].map((v,i)=>'<i style="height:'+v+'%" title="Dato de ejemplo"></i>').join("")+'</div><small>Serie ilustrativa, no medición real.</small></section><section><h3>Ortomosaicos periódicos</h3><p>Espacio preparado para fechas, cobertura, estado de procesamiento y enlaces a capas.</p></section><section><h3>Inspecciones</h3><p>Tarjetas configurables para hallazgos, evidencias y estado.</p></section><section><h3>Inventario 3D</h3><p>'+state.projects.filter(p=>p.model).length+' modelo(s) público(s) configurado(s).</p></section></div>');
 }
@@ -145,5 +167,5 @@ function showModel(p){
  openModal(p.name,"Visor 3D · "+p.model.format+' · '+p.model.sizeMB+' MB','<div class="model-view-wrap"><div id="model-warning" class="demo-banner">'+(p.model.sizeMB>25?"Modelo pesado: puede tardar en móvil.":"Modelo optimizado para demostración web.")+'</div><model-viewer id="iv-model" src="'+esc(p.model.src)+'" camera-controls auto-rotate shadow-intensity="1" ar ar-modes="webxr scene-viewer quick-look" loading="eager" alt="'+esc(p.name)+'"><button slot="ar-button" id="ar-button" class="ar-button hidden">Ver en AR</button></model-viewer><p class="help">AR se muestra solo si model-viewer informa compatibilidad en este dispositivo. En iOS, Quick Look puede requerir USDZ según el flujo del navegador.</p></div>');
  const mv=qs("#iv-model"),ar=qs("#ar-button");mv.addEventListener("load",()=>{if(mv.canActivateAR)ar.classList.remove("hidden")});
 }
-insertUI();loadProjects();window.ivRenderResults(sketch.features,sketch.active);
+insertUI();loadProjects();loadLayerRegistry();window.ivRenderResults(sketch.features,sketch.active);
 })();
