@@ -9,22 +9,23 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 function status(msg,type="info"){const el=qs("#portal-status");if(el){el.textContent=msg;el.dataset.type=type}}
 function insertUI(){
  const eyebrow=qs(".eyebrow");
+ qsa(".sidebar > .panel").forEach(p=>p.classList.add("map-workspace-panel"));
  const nav=document.createElement("nav");nav.className="portal-nav";nav.setAttribute("aria-label","Secciones del geoportal");
  nav.innerHTML='<button data-view="catalog" class="active">Proyectos</button><button data-view="viewer">Visor</button><button data-view="dashboard">Paneles</button><button data-view="stories">Historias</button><button data-view="models">3D/AR</button>';
  eyebrow.after(nav);
- const catalog=document.createElement("section");catalog.id="catalog-panel";catalog.className="panel catalog-panel";
+ const catalog=document.createElement("section");catalog.id="catalog-panel";catalog.className="panel catalog-panel project-workspace-panel";
  catalog.innerHTML='<div class="panel-title"><h2>Catálogo de proyectos</h2><span id="project-count" class="badge">0</span></div><input id="project-search" class="field" type="search" placeholder="Buscar proyecto, cliente o ubicación" aria-label="Buscar proyectos"><div class="filter-grid"><select id="filter-service" class="field" aria-label="Filtrar por servicio"><option value="">Servicio</option></select><select id="filter-client" class="field" aria-label="Filtrar por cliente"><option value="">Cliente</option></select><select id="filter-location" class="field" aria-label="Filtrar por ubicación"><option value="">Ubicación</option></select><select id="filter-date" class="field" aria-label="Filtrar por fecha"><option value="">Fecha</option></select><select id="filter-product" class="field" aria-label="Filtrar por producto"><option value="">Producto</option></select></div><div id="category-tabs" class="category-tabs"></div><div id="project-list" class="project-list"><div class="loading">Cargando proyectos…</div></div>';
  nav.after(catalog);
- const search=document.createElement("section");search.className="panel viewer-panel";search.innerHTML='<h2>Buscar en el visor</h2><div class="search-row"><input id="map-search" class="field" placeholder="Proyecto o lat, lng" aria-label="Buscar proyecto o coordenadas"><button id="map-search-btn" aria-label="Buscar">⌕</button></div><p class="help">Búsqueda local por proyectos publicados o coordenadas. No envía consultas a geocodificadores externos.</p>';
+ const search=document.createElement("section");search.className="panel viewer-panel map-workspace-panel";search.innerHTML='<h2>Buscar en el visor</h2><div class="search-row"><input id="map-search" class="field" placeholder="Proyecto o lat, lng" aria-label="Buscar proyecto o coordenadas"><button id="map-search-btn" aria-label="Buscar">⌕</button></div><p class="help">Búsqueda local por proyectos publicados o coordenadas. No envía consultas a geocodificadores externos.</p>';
  catalog.after(search);
- const rasterPanel=document.createElement("section");rasterPanel.className="panel viewer-panel";rasterPanel.innerHTML='<div class="panel-title"><h2>Capas configuradas</h2><span id="layer-registry-status" class="dot pending"></span></div><div id="configured-layers" class="layer-list"><div class="loading">Leyendo layers.json…</div></div>';
+ const rasterPanel=document.createElement("section");rasterPanel.className="panel viewer-panel map-workspace-panel";rasterPanel.innerHTML='<div class="panel-title"><h2>Capas configuradas</h2><span id="layer-registry-status" class="dot pending"></span></div><div id="configured-layers" class="layer-list"><div class="loading">Leyendo layers.json…</div></div>';
  search.after(rasterPanel);
  const toolsPanel=qsa(".panel").find(p=>qs("h2",p)?.textContent==="Herramientas");
  if(toolsPanel){
    const extras=document.createElement("div");extras.className="portal-extra-tools";extras.innerHTML='<button id="btn-fullscreen">⛶ Pantalla</button><button id="btn-import">⇧ Cargar datos</button><input id="local-file" type="file" hidden accept=".geojson,.json,.kml,.gpx,.csv,application/geo+json"><button id="btn-edit">✥ Editar selección</button>';
    toolsPanel.append(extras);
  }
- const results=document.createElement("section");results.className="panel viewer-panel";results.innerHTML='<div class="panel-title"><h2>Resultados / dibujos</h2><button id="download-notes" class="mini">Anotaciones</button></div><div id="draw-results" class="draw-results"><div class="empty">Aún no hay geometrías.</div></div>';
+ const results=document.createElement("section");results.className="panel viewer-panel map-workspace-panel";results.innerHTML='<div class="panel-title"><h2>Resultados / dibujos</h2><button id="download-notes" class="mini">Anotaciones</button></div><div id="draw-results" class="draw-results"><div class="empty">Aún no hay geometrías.</div></div>';
  toolsPanel?.after(results);
  const live=document.createElement("div");live.id="portal-status";live.className="sr-status";live.setAttribute("role","status");live.setAttribute("aria-live","polite");live.textContent="Geoportal listo";document.body.append(live);
  const modal=document.createElement("div");modal.id="portal-modal";modal.className="modal hidden";modal.innerHTML='<div class="modal-card portal-modal-card"><div class="modal-head"><div><strong id="portal-modal-title">Island View</strong><small id="portal-modal-subtitle"></small></div><button id="portal-modal-close" aria-label="Cerrar">×</button></div><div id="portal-modal-body" class="portal-modal-body"></div></div>';qs(".map-wrap").append(modal);
@@ -36,11 +37,18 @@ function insertUI(){
  qs("#btn-edit")?.addEventListener("click",editActive);
  qs("#download-notes")?.addEventListener("click",downloadNotes);
  qs("#map-search-btn").onclick=mapSearch;qs("#map-search").onkeydown=e=>{if(e.key==="Enter")mapSearch()};
+ setWorkspace("catalog");
+}
+function setWorkspace(view){
+ const project=view==="catalog";
+ qsa(".project-workspace-panel").forEach(el=>el.classList.toggle("workspace-hidden",!project));
+ qsa(".map-workspace-panel").forEach(el=>el.classList.toggle("workspace-hidden",project));
+ document.body.dataset.workspace=project?"catalog":"viewer";
 }
 function openView(view,button){
  qsa(".portal-nav button").forEach(b=>b.classList.toggle("active",b===button));
- if(view==="catalog"){qs("#catalog-panel").scrollIntoView({behavior:"smooth"});return}
- if(view==="viewer"){qs("#map").focus?.();status("Visor activo");return}
+ if(view==="catalog"){setWorkspace("catalog");qs("#catalog-panel").scrollIntoView({behavior:"smooth"});return}
+ if(view==="viewer"){setWorkspace("viewer");qs("#map").focus?.();status("Visor activo");return}
  if(view==="dashboard")showDashboard();
  if(view==="stories")showStories();
  if(view==="models")showModels();
