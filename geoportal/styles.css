@@ -17,3 +17,387 @@
 @media(max-width:800px){.sidebar{width:310px}.topbar{left:330px}.portal-nav{grid-template-columns:repeat(3,1fr)}.filter-grid{grid-template-columns:1fr}.filter-grid select:last-child{grid-column:auto}.detail-grid{grid-template-columns:1fr 1fr}.stories,.model-grid{grid-template-columns:1fr 1fr}.kpi-grid{grid-template-columns:1fr 1fr}.dashboard-grid{grid-template-columns:1fr}.ortho-tools{max-height:72vh;overflow:auto}}
 @media(max-width:560px){.sidebar{width:270px}.topbar{left:290px}.detail-grid,.stories,.model-grid{grid-template-columns:1fr}.portal-modal-body{padding:10px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* =========================================================
+   Island View Geoportal — professional GIS light interface
+   Clean institutional UI inspired by modern desktop GIS,
+   without copying third-party branding or proprietary UI.
+   ========================================================= */
+:root{
+  --bg:#f7f8f8;
+  --panel:#ffffff;
+  --panel2:#f3f4f4;
+  --text:#2b2b2b;
+  --muted:#6a6a6a;
+  --cyan:#087ea4;
+  --lime:#78a719;
+  --line:#d9d9d9;
+  --action:#007ac2;
+  --action-hover:#00619b;
+  --focus:#005e95;
+  --shadow:0 1px 4px rgba(0,0,0,.16);
+}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.app-shell{grid-template-columns:360px 1fr;background:#fff}
+.sidebar{
+  background:#fff;
+  border-right:1px solid #cfcfcf;
+  padding:0;
+  box-shadow:none;
+  color:var(--text);
+}
+.brand{
+  min-height:72px;
+  margin:0;
+  padding:10px 18px;
+  gap:11px;
+  border-bottom:1px solid var(--line);
+  background:#fff;
+}
+.brand-logo{width:48px;height:48px;filter:none}
+.brand h1{font-size:18px;font-weight:600;letter-spacing:0;color:#252525}
+.brand p{font-size:11px;color:#666;margin-top:2px}
+.eyebrow{
+  margin:0;
+  padding:10px 18px 6px;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.02em;
+  text-transform:none;
+  color:#777;
+  background:#fff;
+}
+.portal-nav{
+  display:flex;
+  grid-template-columns:none;
+  gap:0;
+  margin:0;
+  padding:0 12px 10px;
+  overflow-x:auto;
+  border-bottom:1px solid var(--line);
+  background:#fff;
+}
+.portal-nav button{
+  flex:0 0 auto;
+  border:0;
+  border-bottom:2px solid transparent;
+  border-radius:0;
+  padding:9px 8px 7px;
+  background:transparent;
+  color:#555;
+  font-size:11px;
+  font-weight:500;
+}
+.portal-nav button:hover{background:#f4f4f4;filter:none;color:#222}
+.portal-nav button.active{
+  background:transparent;
+  border-color:var(--action);
+  color:var(--action);
+  box-shadow:none;
+}
+.panel{
+  padding:15px 18px;
+  border-top:0;
+  border-bottom:1px solid #e4e4e4;
+  background:#fff;
+}
+.panel h2,.panel-title h2{
+  margin:0;
+  color:#333;
+  font-size:12px;
+  font-weight:600;
+  text-transform:none;
+  letter-spacing:0;
+}
+.help{font-size:11px;line-height:1.45;color:#777;margin:7px 0 10px}
+.layer-list{gap:2px;margin:8px 0 10px}
+.layer-row,.panel label{
+  background:transparent;
+  color:#333;
+  border-radius:2px;
+  padding:7px 5px;
+  font-size:11px;
+}
+.layer-row:hover,.panel label:hover{background:#f3f3f3}
+input{accent-color:var(--action)}
+button{
+  border:1px solid #b9b9b9;
+  background:#fff;
+  color:#333;
+  border-radius:2px;
+  padding:8px 11px;
+  font-weight:500;
+  box-shadow:none;
+}
+button:hover{filter:none;background:#f3f3f3;border-color:#8c8c8c}
+button:focus-visible,.field:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button.primary{
+  width:100%;
+  background:var(--action);
+  border-color:var(--action);
+  color:#fff;
+  border-radius:2px;
+}
+button.primary:hover{background:var(--action-hover);border-color:var(--action-hover)}
+.secondary-wide{
+  margin-top:6px;
+  background:#fff;
+  border-color:#b9b9b9;
+  color:#333;
+}
+.tool-grid{gap:6px;margin-top:9px}
+.tool-grid button,.portal-extra-tools button{font-size:11px;text-align:center}
+.portal-extra-tools{gap:6px}
+.field{
+  border:1px solid #bcbcbc;
+  background:#fff;
+  color:#333;
+  border-radius:2px;
+  padding:8px 9px;
+  font-size:11px;
+}
+.field:focus{border-color:var(--action);box-shadow:0 0 0 1px var(--action)}
+.filter-grid{gap:5px}
+.category-tabs{gap:3px;padding:8px 0 2px}
+.category-tabs button{
+  border:1px solid #d2d2d2;
+  border-radius:12px;
+  padding:4px 8px;
+  color:#555;
+  font-size:9px;
+}
+.category-tabs button.active{
+  background:#eaf4fb;
+  border-color:#8fc5e5;
+  color:#005e95;
+}
+.badge{
+  background:#edf5f9;
+  color:#365b6c;
+  border-radius:10px;
+  font-weight:600;
+}
+.project-list{gap:0;margin-top:8px}
+.project-card{
+  border:0;
+  border-top:1px solid #ececec;
+  border-radius:0;
+  padding:9px 4px;
+  background:#fff;
+}
+.project-card:last-child{border-bottom:1px solid #ececec}
+.project-card:hover{background:#f7f7f7;border-color:#ececec}
+.project-card strong{font-size:11px;font-weight:600;color:#333}
+.project-card small{font-size:9px;color:#777}
+.project-open,.mini{border:0;color:var(--action);background:transparent;padding:5px 6px}
+.project-open:hover,.mini:hover{background:#eaf4fb}
+.access.public{color:#4b7c0f;font-size:7px;font-weight:600}
+footer{
+  padding:14px 18px 18px;
+  border-top:0;
+  color:#555;
+}
+footer strong{font-size:10px;color:#444}
+footer span{font-size:9px;color:#777}
+.topbar{
+  top:12px;
+  left:12px;
+  right:12px;
+}
+.glass,.live{
+  background:#fff;
+  backdrop-filter:none;
+  border:1px solid #cfcfcf;
+  box-shadow:var(--shadow);
+  color:#333;
+}
+.glass{gap:10px;padding:8px 11px;border-radius:2px}
+.glass strong{font-size:12px;font-weight:600}
+.glass span{font-size:10px;color:#666;border-left:1px solid #ddd;padding-left:10px;font-variant-numeric:tabular-nums}
+.live{
+  border-radius:2px;
+  padding:7px 10px;
+  color:#555;
+  font-size:10px;
+  letter-spacing:0;
+}
+.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5a9f24;margin-right:4px}
+.ortho-tools{
+  top:12px;
+  gap:0;
+  padding:0;
+  background:#fff;
+  border:1px solid #c8c8c8;
+  border-radius:2px;
+  backdrop-filter:none;
+  box-shadow:var(--shadow);
+}
+.ortho-tools button{
+  min-width:54px;
+  padding:6px 8px 5px;
+  border:0;
+  border-right:1px solid #e2e2e2;
+  border-radius:0;
+  background:#fff;
+  color:#444;
+  font-size:13px;
+}
+.ortho-tools button:last-child{border-right:0}
+.ortho-tools button:hover{background:#f2f2f2}
+.ortho-tools button span{font-size:8px;color:#666;margin-top:2px;font-weight:400}
+.ortho-tools button.active{
+  background:#eaf4fb;
+  color:#005e95;
+  border-color:#e2e2e2;
+  box-shadow:inset 0 -2px 0 var(--action);
+}
+.ortho-tools button.active span{color:#005e95}
+.tool-symbol{display:block;height:16px;line-height:16px;font-size:14px;font-weight:500}
+.measure-card{
+  bottom:18px;
+  background:#fff;
+  color:#333;
+  border:1px solid #c8c8c8;
+  border-radius:2px;
+  backdrop-filter:none;
+  box-shadow:var(--shadow);
+  padding:9px 10px;
+}
+.measure-card small{color:#777;font-size:8px;letter-spacing:.05em}
+.measure-card strong{font-size:17px;font-weight:600}
+.measure-card span{color:#666}
+.export-menu{
+  background:#fff;
+  border:1px solid #c8c8c8;
+  border-radius:2px;
+  box-shadow:var(--shadow);
+}
+.export-menu button{border:0;border-radius:0;text-align:left}
+.legend{
+  right:12px;
+  bottom:12px;
+  background:#fff;
+  color:#333;
+  backdrop-filter:none;
+  border:1px solid #c8c8c8;
+  border-radius:2px;
+  box-shadow:var(--shadow);
+  padding:10px 12px;
+}
+.legend strong{color:#555;font-size:9px;letter-spacing:0;font-weight:600}
+.opacity-card{
+  top:60px;
+  background:#fff;
+  color:#333;
+  border:1px solid #c8c8c8;
+  border-radius:2px;
+  backdrop-filter:none;
+  box-shadow:var(--shadow);
+}
+.opacity-card label{color:#555}
+.modal{
+  background:rgba(0,0,0,.34);
+  backdrop-filter:none;
+}
+.modal-card{
+  background:#fff;
+  color:#333;
+  border:1px solid #aaa;
+  border-radius:3px;
+  box-shadow:0 8px 30px rgba(0,0,0,.24);
+}
+.modal-head{border-bottom:1px solid #ddd;background:#fafafa}
+.modal-head strong{font-size:13px;font-weight:600}
+.modal-head small{color:#777}
+.modal-head button{border:0;background:transparent;font-size:18px}
+.portal-modal-body{background:#fff}
+.project-detail>p,.dashboard-grid p,.dashboard-grid small,.stories p,.model-grid small,.model-grid p{color:#666}
+.detail-grid>div,.kpi-grid article,.dashboard-grid section,.stories article,.model-grid article{
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:2px;
+  box-shadow:none;
+}
+.detail-grid small,.kpi-grid small,.kpi-grid span{color:#777}
+.demo-banner{
+  border:1px solid #e2c785;
+  background:#fff8e5;
+  border-radius:2px;
+  color:#735d22;
+}
+.spark-bars i{background:var(--action);border-radius:1px 1px 0 0}
+.stories article>span{color:#567c1d}
+.model-thumb{
+  border-radius:2px;
+  background:#f2f5f6;
+  color:#56737f;
+}
+.model-view-wrap model-viewer{
+  border-radius:2px;
+  background:#eef1f2;
+}
+.ar-button{background:var(--action);color:#fff}
+.sr-status{
+  bottom:10px;
+  background:#fff;
+  color:#555;
+  border:1px solid #c8c8c8;
+  border-radius:2px;
+  box-shadow:var(--shadow);
+}
+.measure-label{
+  background:#fff;
+  color:#333;
+  border:1px solid #aaa;
+  border-radius:2px;
+  box-shadow:0 1px 3px rgba(0,0,0,.18);
+}
+.annotation-label{
+  background:#fff;
+  color:#333;
+  border:1px solid #999;
+  border-left:3px solid var(--action);
+  border-radius:2px;
+  font-weight:500;
+}
+.maplibregl-popup-content{
+  background:#fff;
+  color:#333;
+  border:1px solid #bbb;
+  border-radius:2px;
+  box-shadow:var(--shadow);
+}
+.maplibregl-popup-tip{border-top-color:#fff!important}
+.maplibregl-ctrl-group{
+  background:#fff!important;
+  border-radius:2px!important;
+  box-shadow:var(--shadow)!important;
+}
+.maplibregl-ctrl button{filter:none}
+.maplibregl-ctrl-attrib{background:rgba(255,255,255,.9)!important;color:#555!important}
+.dot.pending{background:#d6a600;box-shadow:none}
+.dot.ok{background:#5a9f24;box-shadow:none}
+.dot.fail{background:#c7461b}
+.loading,.empty{color:#777}
+.error-state{color:#b63c32}
+@media(max-width:800px){
+  .app-shell{grid-template-columns:1fr}
+  .sidebar{
+    left:8px;top:8px;bottom:8px;
+    width:310px;
+    border:1px solid #bbb;
+    border-radius:2px;
+    box-shadow:0 3px 14px rgba(0,0,0,.2)
+  }
+  .topbar{left:330px}
+  .ortho-tools{top:auto;bottom:12px;right:8px;left:auto;transform:none;flex-direction:column}
+  .ortho-tools button{border-right:0;border-bottom:1px solid #e2e2e2;min-width:42px}
+  .ortho-tools button span{display:none}
+  .measure-card{left:8px;bottom:8px;width:calc(100% - 62px)}
+}
+@media(max-width:560px){
+  .sidebar{width:270px;padding:0}
+  .topbar{left:290px}
+  .brand{padding:9px 14px}
+  .panel{padding:13px 14px}
+}
