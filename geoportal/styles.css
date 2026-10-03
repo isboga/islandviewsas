@@ -543,3 +543,8 @@ body:has(.attribute-table:not(.hidden)) .legend{bottom:258px}
   .attribute-head>div>strong{display:none}
   .attribute-table th,.attribute-table td{padding:6px 7px}
 }
+
+/* Official Island View SAS logo */
+.brand-logo{width:58px;height:58px;object-fit:contain;filter:none}
+.appbar-logo{width:34px;height:34px;object-fit:contain;flex:0 0 auto}
+@media(max-width:600px){.appbar-logo{width:30px;height:30px}.brand-logo{width:52px;height:52px}}
