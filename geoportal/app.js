@@ -80,8 +80,8 @@ map.on("click",e=>{
 });
 function finishTool(){
  let f=liveFeature();
- if(sketch.mode==="line"&&sketch.coords.length>=2){f=turf.lineString(sketch.coords,{name:"Medición lineal"});sketch.features.push(f);sketch.active=f}
- if(sketch.mode==="polygon"&&sketch.coords.length>=3){f=turf.polygon([[...sketch.coords,sketch.coords[0]]],{name:"Área seleccionada"});sketch.features.push(f);sketch.active=f}
+ if(sketch.mode==="line"&&sketch.coords.length>=2){f=turf.lineString(sketch.coords,{name:"Medición lineal"});sketch.features.push(f);sketch.active=f;addMeasurementMarker(f)}
+ if(sketch.mode==="polygon"&&sketch.coords.length>=3){f=turf.polygon([[...sketch.coords,sketch.coords[0]]],{name:"Área seleccionada"});sketch.features.push(f);sketch.active=f;addMeasurementMarker(f)}
  if(f)updateMeasure(f);sketch.coords=[];sketch.hover=null;sketch.mode=null;document.querySelectorAll(".ortho-tools button").forEach(b=>b.classList.remove("active"));map.getCanvas().classList.remove("tool-crosshair");redraw();
 }
 document.querySelector("#btn-finish").onclick=finishTool;
@@ -113,6 +113,12 @@ map.on("mousemove",e=>{
  const preview=liveFeature(true);if(preview)updateMeasure(preview);
 });
 map.on("mouseout",()=>{if(sketch.hover){sketch.hover=null;redraw()}});
+function addMeasurementMarker(f){
+ const label=formatMeasure(f);if(!label)return;
+ let pt;try{pt=f.geometry.type==="Polygon"?turf.centroid(f):turf.along(f,turf.length(f,{units:"kilometers"})/2,{units:"kilometers"})}catch(e){return}
+ const el=document.createElement("div");el.className="measurement-result-label";el.textContent=label;
+ sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(pt.geometry.coordinates).addTo(map));
+}
 function addCoordMarker(xy){const el=document.createElement("div");el.className="measure-label";el.textContent=xy[1].toFixed(6)+", "+xy[0].toFixed(6);sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(xy).addTo(map))}
 function addNoteMarker(xy,note){const el=document.createElement("div");el.className="annotation-label";el.textContent=note;sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(xy).addTo(map))}
 function selectionFC(){return {type:"FeatureCollection",features:sketch.active?[sketch.active]:sketch.features}}
