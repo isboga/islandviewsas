@@ -548,3 +548,15 @@ body:has(.attribute-table:not(.hidden)) .legend{bottom:258px}
 .brand-logo{width:58px;height:58px;object-fit:contain;filter:none}
 .appbar-logo{width:34px;height:34px;object-fit:contain;flex:0 0 auto}
 @media(max-width:600px){.appbar-logo{width:30px;height:30px}.brand-logo{width:52px;height:52px}}
+
+/* Measurements always float above raster/orthomosaic products */
+.measurement-result-label{
+  position:relative;z-index:20;padding:4px 7px;border:1px solid #007ac2;border-radius:2px;
+  background:#fff;color:#17313b;font:600 11px/1.2 Arial,sans-serif;
+  box-shadow:0 1px 4px rgba(0,0,0,.24);white-space:nowrap;pointer-events:none
+}
+.measurement-result-label:after{
+  content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;
+  background:#fff;border-right:1px solid #007ac2;border-bottom:1px solid #007ac2;
+  transform:translateX(-50%) rotate(45deg)
+}
