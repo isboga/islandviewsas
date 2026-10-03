@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "notice": "Registro público de productos derivados. Los archivos pesados deben vivir en almacenamiento o servicios geoespaciales externos; este manifiesto conserva metadatos y endpoints autorizados.",
+  "categories": [
+    {"id":"orthomosaic","label":"Ortomosaicos"},
+    {"id":"3d","label":"Modelos 3D"},
+    {"id":"pointcloud","label":"Nubes de puntos"},
+    {"id":"elevation","label":"DSM / DTM"},
+    {"id":"thermal","label":"Térmico"},
+    {"id":"vector","label":"Vectores"},
+    {"id":"media","label":"Fotografías / 360"},
+    {"id":"document","label":"Documentos"}
+  ],
+  "products": [
+    {
+      "id": "modelo-demo-glb",
+      "projectId": "modelo-demo",
+      "name": "Modelo 3D demostrativo",
+      "type": "3d",
+      "format": "GLB",
+      "access": "public",
+      "status": "published",
+      "source": {"kind":"url","url":"../sitarbuckss.glb"},
+      "metadata": {"captureDate":"2026","crs":"No aplica","sizeMB":0.18}
+    }
+  ]
+}
