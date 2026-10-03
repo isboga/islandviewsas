@@ -84,14 +84,14 @@ function notify(t){const el=$("#portal-status");if(el){el.textContent=t;el.datas
 function typeName(id){return TYPES.find(x=>x[0]===id)?.[1]||id}
 function icon(id){return ({orthomosaic:"▦","3d":"3D",pointcloud:"•••",elevation:"△",thermal:"◉",vector:"◇",media:"▣",document:"≡"})[id]||"□"}
 function defaultName(){return typeName(draft.type)+" · "+(draft.captureDate||new Date().toISOString().slice(0,10))}
-function recommend(t){return ({orthomosaic:"COG/teselas o WMS/XYZ; GeoTIFF original en almacenamiento externo.",pointcloud:"LAS/LAZ original en almacenamiento y Potree/DroneDB para visualización web.","3d":"GLB optimizado para web; modelo maestro en almacenamiento externo.",elevation:"COG o WMS/XYZ para DSM/DTM.",thermal:"Ortomosaico térmico como WMS/COG y originales radiométricos preservados.",vector:"GeoJSON para web y SHP/GPKG como entregable.",media:"Imágenes optimizadas para web y originales fuera de GitHub.",document:"PDF optimizado; documentos privados fuera del repositorio público."})[t]||"Servicio web o almacenamiento externo según tamaño.")}
+function recommend(t){return ({orthomosaic:"COG/teselas o WMS/XYZ; GeoTIFF original en almacenamiento externo.",pointcloud:"LAS/LAZ original en almacenamiento y Potree/DroneDB para visualización web.","3d":"GLB optimizado para web; modelo maestro en almacenamiento externo.",elevation:"COG o WMS/XYZ para DSM/DTM.",thermal:"Ortomosaico térmico como WMS/COG y originales radiométricos preservados.",vector:"GeoJSON para web y SHP/GPKG como entregable.",media:"Imágenes optimizadas para web y originales fuera de GitHub.",document:"PDF optimizado; documentos privados fuera del repositorio público."})[t]||"Servicio web o almacenamiento externo según tamaño."}
 function human(n){if(!n)return"";const u=["B","KB","MB","GB"];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++}return n.toFixed(i?1:0)+" "+u[i]}
 function db(){return new Promise((res,rej)=>{const r=indexedDB.open("island-view-geoportal",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("products"))r.result.createObjectStore("products",{keyPath:"id"})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function saveDraft(){
  const record={...draft,sessionFile:undefined,updatedAt:new Date().toISOString()};
  if(draft.projectId==="__new")record.projectDraft={name:draft.newProjectName,location:draft.newProjectLocation};
  const d=await db();await new Promise((res,rej)=>{const tx=d.transaction("products","readwrite");tx.objectStore("products").put(record);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});d.close();
- localProducts.splice(localProducts.findIndex(x=>x.id===record.id),1);localProducts.push(record);
+ const i=localProducts.findIndex(x=>x.id===record.id);if(i>=0)localProducts.splice(i,1);localProducts.push(record);
 }
 async function loadDrafts(){try{const d=await db();const rows=await new Promise((res,rej)=>{const r=d.transaction("products").objectStore("products").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});localProducts.push(...rows);d.close()}catch(e){}}
 function refreshCounts(){
