@@ -2,7 +2,7 @@
 "use strict";
 const IV=window.IVGeo;
 if(!IV){console.error("Island View Geoportal API no disponible");return}
-const {map,sketch,redraw,activateTool,fitFeature,dl,setBasemap,getBasemap}=IV;
+const {map,sketch,redraw,activateTool,fitFeature,dl,setBasemap,getBasemap,bringSketchToFront}=IV;
 const state={projects:[],filtered:[],imported:{type:"FeatureCollection",features:[]},category:"all"};
 const qs=(s,p=document)=>p.querySelector(s), qsa=(s,p=document)=>[...p.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -188,6 +188,7 @@ function addImported(fc){
  state.imported.features.push(...fc.features);const id="local-import";
  if(!map.getSource(id)){map.addSource(id,{type:"geojson",data:state.imported});map.addLayer({id:id+"-fill",type:"fill",source:id,filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#18a9c6","fill-opacity":.22}});map.addLayer({id:id+"-line",type:"line",source:id,filter:["match",["geometry-type"],["LineString","Polygon"],true,false],paint:{"line-color":"#8eeaff","line-width":3}});map.addLayer({id:id+"-point",type:"circle",source:id,filter:["==",["geometry-type"],"Point"],paint:{"circle-color":"#18a9c6","circle-radius":6,"circle-stroke-color":"#fff","circle-stroke-width":2}})}
  else map.getSource(id).setData(state.imported);
+ bringSketchToFront?.();
  if(fc.features.length)fitFeature(fc);
 }
 async function loadLayerRegistry(){
@@ -205,8 +206,8 @@ async function loadLayerRegistry(){
    if(cfg.type==="wmts"&&cfg.tileUrlTemplate)tiles=[cfg.tileUrlTemplate];
    if(cfg.type==="wms"&&cfg.baseUrl&&cfg.layer)tiles=[cfg.baseUrl+"?service=WMS&version=1.1.1&request=GetMap&layers="+encodeURIComponent(cfg.layer)+"&styles=&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true"];
    if(!cfg.enabled||!tiles.length)continue;
-   if(!map.getSource(id)){map.addSource(id,{type:"raster",tiles,tileSize:256,attribution:cfg.attribution||""});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":cfg.opacity??0.9}})}
-   row.innerHTML='<input type="checkbox"><span>'+esc(cfg.title||cfg.id)+'</span>';row.querySelector("input").onchange=e=>map.setLayoutProperty(id,"visibility",e.target.checked?"visible":"none");box.append(row);
+   if(!map.getSource(id)){map.addSource(id,{type:"raster",tiles,tileSize:256,attribution:cfg.attribution||""});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":cfg.opacity??0.9}});bringSketchToFront?.()}
+   row.innerHTML='<input type="checkbox"><span>'+esc(cfg.title||cfg.id)+'</span>';row.querySelector("input").onchange=e=>{map.setLayoutProperty(id,"visibility",e.target.checked?"visible":"none");bringSketchToFront?.();status((e.target.checked?"Capa activa: ":"Capa oculta: ")+(cfg.title||cfg.id))};box.append(row);
   }
   if(!box.children.length)box.innerHTML='<div class="empty">No hay capas raster públicas activas.</div>';dot.className="dot ok";
  }catch(e){box.innerHTML='<div class="error-state">No se pudo leer layers.json.</div>';dot.className="dot fail"}
