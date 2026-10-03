@@ -131,6 +131,7 @@ function addImported(fc){
  if(fc.features.length)fitFeature(fc);
 }
 async function loadLayerRegistry(){
+ if(!map.loaded())return setTimeout(loadLayerRegistry,300);
  const box=qs("#configured-layers"),dot=qs("#layer-registry-status");
  try{
   const r=await fetch("./layers.json",{cache:"no-cache"});if(!r.ok)throw Error("HTTP "+r.status);const data=await r.json();window.IV_LAYER_CONFIG=data;
