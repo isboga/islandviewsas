@@ -8,6 +8,21 @@
 <footer><strong>ISLAND VIEW S.A.S.</strong><span>Fotogrametría · GIS · LiDAR · Inspección</span></footer>
 </aside>
 <main class="map-wrap"><div id="map"></div><header class="topbar"><div class="glass"><strong>San Andrés · Visor territorial</strong><span id="coords">12.58470, -81.70060</span></div><div class="top-actions"><span class="live">● ONLINE</span></div></header>
+<div class="ortho-tools">
+  <button data-tool="line" title="Medir distancia">↗<span>Distancia</span></button>
+  <button data-tool="polygon" title="Medir área">⬡<span>Área</span></button>
+  <button data-tool="point" title="Tomar geoposición">⌖<span>Punto</span></button>
+  <button data-tool="note" title="Crear anotación">✎<span>Anotar</span></button>
+  <button id="btn-finish" title="Finalizar geometría">✓<span>Finalizar</span></button>
+  <button id="btn-undo" title="Deshacer último vértice">↶<span>Deshacer</span></button>
+  <button id="btn-delete" title="Borrar selección">⌫<span>Borrar</span></button>
+</div>
+<div id="measure-card" class="measure-card hidden"><div><small>MEDICIÓN / SELECCIÓN</small><strong id="measure-value">—</strong><span id="measure-detail">Dibuja sobre el ortomosaico</span></div><button id="btn-export">Exportar ▾</button><div id="export-menu" class="export-menu hidden"><button data-export="geojson">GeoJSON</button><button data-export="kml">KML</button><button data-export="kmz">KMZ</button><button data-export="shp">Shapefile (.zip)</button></div></div>
 <div class="legend"><strong>Leyenda</strong><div><i class="swatch buildings"></i>Edificaciones</div><div><i class="swatch risk"></i>Interés / riesgo</div><div><i class="swatch projects"></i>Proyectos</div></div>
 <div id="ddb-modal" class="modal hidden"><div class="modal-card"><div class="modal-head"><div><strong>DroneDB · SAI</strong><small>Repositorio geoespacial Island View</small></div><button id="btn-close">×</button></div><iframe src="https://hub.dronedb.app/r/islan-view-sas/sai?embed=1" title="DroneDB SAI"></iframe></div></div>
-</main></div><script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script><script src="./app.js"></script></body></html>
+</main></div>
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/shp-write@0.3.2/shpwrite.js"></script>
+<script src="./app.js"></script></body></html>
