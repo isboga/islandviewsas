@@ -21,24 +21,33 @@ function setBasemap(name){
 document.querySelector("#btn-style").onclick=()=>setBasemap(satellite?"osm":"satellite");
 const modal=document.querySelector("#ddb-modal");document.querySelector("#btn-ddb").onclick=()=>modal.classList.remove("hidden");document.querySelector("#btn-close").onclick=()=>modal.classList.add("hidden");modal.onclick=e=>{if(e.target===modal)modal.classList.add("hidden")};
 function safe(s){return s.replace(/[^a-z0-9]/gi,"-").toLowerCase()}
-function addDdbLayer(name){const id="ddb-"+safe(name);if(map.getSource(id))return;const u=DDB.base+"/wms?service=WMS&version=1.1.1&request=GetMap&layers="+encodeURIComponent(name)+"&styles=&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true";map.addSource(id,{type:"raster",tiles:[u],tileSize:256});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":.92}})}
+function addDdbLayer(name){const id="ddb-"+safe(name);if(map.getSource(id)){bringSketchToFront();return}const u=DDB.base+"/wms?service=WMS&version=1.1.1&request=GetMap&layers="+encodeURIComponent(name)+"&styles=&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true";map.addSource(id,{type:"raster",tiles:[u],tileSize:256});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":.92}});bringSketchToFront()}
 async function discoverDroneDB(){const box=document.querySelector("#ddb-layers"),dot=document.querySelector("#ddb-status");try{const r=await fetch(DDB.base+"/wms?service=WMS&request=GetCapabilities&version=1.3.0");if(!r.ok)throw Error(r.status);const xml=new DOMParser().parseFromString(await r.text(),"text/xml");const names=[...xml.querySelectorAll("Layer > Name")].map(n=>n.textContent.trim()).filter(Boolean);ddbNames=[...new Set(names)];if(!ddbNames.length)throw Error("Sin capas");box.innerHTML="";ddbNames.forEach(name=>{addDdbLayer(name);const row=document.createElement("label");row.className="layer-row";row.innerHTML='<input class="ddb-check" type="checkbox"><span>'+name+'</span>';row.querySelector("input").onchange=e=>vis(["ddb-"+safe(name)],e.target.checked);box.appendChild(row)});dot.className="dot ok"}catch(e){dot.className="dot fail";box.innerHTML='<div class="loading">No pude enumerar las capas por CORS o permisos. Puedes abrir el catálogo DroneDB aquí mismo; el visor queda preparado para WMS/WMTS.</div>'}}
 map.on("click","pc",e=>{const p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML("<strong>"+p.name+"</strong><br><span>"+p.type+"</span>").addTo(map)});
 
 /* === Island View GIS drawing / measurement / export tools === */
-const sketch={mode:null,coords:[],features:[],markers:[],active:null};
+const sketch={mode:null,coords:[],features:[],markers:[],active:null,hover:null};
+function bringSketchToFront(){
+ ["iv-sketch-fill","iv-sketch-line","iv-sketch-point","iv-sketch-vertex-label","iv-sketch-measure-label"].forEach(id=>{
+  if(map.getLayer(id))try{map.moveLayer(id)}catch(e){}
+ });
+}
 function ensureSketch(){
  if(!map.getSource("iv-sketch")) map.addSource("iv-sketch",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
  if(!map.getLayer("iv-sketch-fill")) map.addLayer({id:"iv-sketch-fill",type:"fill",source:"iv-sketch",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#a7d82e","fill-opacity":.22}});
  if(!map.getLayer("iv-sketch-line")) map.addLayer({id:"iv-sketch-line",type:"line",source:"iv-sketch",filter:["match",["geometry-type"],["LineString","Polygon"],true,false],paint:{"line-color":"#d8ff77","line-width":3}});
  if(!map.getLayer("iv-sketch-point")) map.addLayer({id:"iv-sketch-point",type:"circle",source:"iv-sketch",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":["case",["==",["get","active"],true],8,6],"circle-color":["case",["==",["get","active"],true],"#ffffff","#a7d82e"],"circle-stroke-color":["case",["==",["get","active"],true],"#a7d82e","#ffffff"],"circle-stroke-width":3}});
  if(!map.getLayer("iv-sketch-vertex-label")) map.addLayer({id:"iv-sketch-vertex-label",type:"symbol",source:"iv-sketch",filter:["==",["get","kind"],"vertex"],layout:{"text-field":["to-string",["get","vertex"]],"text-size":11,"text-offset":[0,-1.35],"text-allow-overlap":true},paint:{"text-color":"#ffffff","text-halo-color":"#06151b","text-halo-width":2}});
+ if(!map.getLayer("iv-sketch-measure-label")) map.addLayer({id:"iv-sketch-measure-label",type:"symbol",source:"iv-sketch",filter:["==",["get","kind"],"measure-label"],layout:{"text-field":["get","label"],"text-size":12,"text-font":["Open Sans Semibold"],"text-offset":[0,-1.1],"text-allow-overlap":true},paint:{"text-color":"#17313b","text-halo-color":"#ffffff","text-halo-width":3}});
+ bringSketchToFront();
 }
 function redraw(){
  ensureSketch();
- const live=liveFeature();
+ const live=liveFeature(true);
  const vertices=sketch.coords.map((coord,i)=>turf.point(coord,{kind:"vertex",vertex:i+1,active:i===sketch.coords.length-1}));
- map.getSource("iv-sketch").setData({type:"FeatureCollection",features:[...sketch.features,...(live?[live]:[]),...vertices]});
+ const labels=sketch.features.map(measureLabelFeature).filter(Boolean);
+ map.getSource("iv-sketch").setData({type:"FeatureCollection",features:[...sketch.features,...(live?[live]:[]),...vertices,...labels]});
+ bringSketchToFront();
  renderVertexLabels();
  if(window.ivRenderResults) window.ivRenderResults(sketch.features,sketch.active);
 }
@@ -49,15 +58,16 @@ function renderVertexLabels(){
  const el=document.querySelector("#measure-detail");
  if(el&&sketch.mode) el.textContent="Vértices: "+count+" · Último: "+last[1].toFixed(7)+", "+last[0].toFixed(7)+" · Toca para continuar";
 }
-function liveFeature(){
+function liveFeature(withHover=false){
  if(!sketch.mode||!sketch.coords.length)return null;
- if(sketch.mode==="line")return turf.lineString(sketch.coords,{kind:"distance"});
- if(sketch.mode==="polygon"&&sketch.coords.length>2)return turf.polygon([[...sketch.coords,sketch.coords[0]]],{kind:"area"});
+ const coords=(withHover&&sketch.hover&&(sketch.mode==="line"||sketch.mode==="polygon"))?[...sketch.coords,sketch.hover]:sketch.coords;
+ if(sketch.mode==="line")return coords.length>1?turf.lineString(coords,{kind:"distance"}):turf.point(coords[0],{kind:"vertex"});
+ if(sketch.mode==="polygon"&&coords.length>2)return turf.polygon([[...coords,coords[0]]],{kind:"area"});
  if((sketch.mode==="point"||sketch.mode==="note")&&sketch.coords.length)return turf.point(sketch.coords[0]);
- return sketch.coords.length>1?turf.lineString(sketch.coords):turf.point(sketch.coords[0]);
+ return coords.length>1?turf.lineString(coords):turf.point(coords[0]);
 }
 function activateTool(mode){
- sketch.mode=mode;sketch.coords=[];document.querySelectorAll(".ortho-tools [data-tool]").forEach(b=>b.classList.toggle("active",b.dataset.tool===mode));map.getCanvas().classList.toggle("tool-crosshair",!!mode);
+ sketch.mode=mode;sketch.coords=[];sketch.hover=null;document.querySelectorAll(".ortho-tools [data-tool]").forEach(b=>b.classList.toggle("active",b.dataset.tool===mode));map.getCanvas().classList.toggle("tool-crosshair",!!mode);
  document.querySelector("#measure-card").classList.remove("hidden");document.querySelector("#measure-value").textContent=mode==="polygon"?"Área":"—";document.querySelector("#measure-detail").textContent=mode==="note"?"Toca el mapa para ubicar la anotación":mode==="point"?"Toca el mapa para capturar coordenadas":"Toca para agregar vértices · Finalizar al terminar";redraw();
 }
 document.querySelectorAll(".ortho-tools [data-tool]").forEach(b=>b.onclick=()=>activateTool(b.dataset.tool));
@@ -66,17 +76,17 @@ map.on("click",e=>{
  const xy=[e.lngLat.lng,e.lngLat.lat];
  if(sketch.mode==="point"){const f=turf.point(xy,{name:"Geoposición",lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addCoordMarker(xy);updateMeasure(f);finishTool();return}
  if(sketch.mode==="note"){const note=prompt("Texto de la anotación:","Observación");if(note!==null){const f=turf.point(xy,{name:"Anotación",note,lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addNoteMarker(xy,note);updateMeasure(f);finishTool()}return}
- sketch.coords.push(xy);redraw();updateMeasure(liveFeature());renderVertexLabels();
+ sketch.coords.push(xy);sketch.hover=null;redraw();updateMeasure(liveFeature());renderVertexLabels();
 });
 function finishTool(){
  let f=liveFeature();
  if(sketch.mode==="line"&&sketch.coords.length>=2){f=turf.lineString(sketch.coords,{name:"Medición lineal"});sketch.features.push(f);sketch.active=f}
  if(sketch.mode==="polygon"&&sketch.coords.length>=3){f=turf.polygon([[...sketch.coords,sketch.coords[0]]],{name:"Área seleccionada"});sketch.features.push(f);sketch.active=f}
- if(f)updateMeasure(f);sketch.coords=[];sketch.mode=null;document.querySelectorAll(".ortho-tools button").forEach(b=>b.classList.remove("active"));map.getCanvas().classList.remove("tool-crosshair");redraw();
+ if(f)updateMeasure(f);sketch.coords=[];sketch.hover=null;sketch.mode=null;document.querySelectorAll(".ortho-tools button").forEach(b=>b.classList.remove("active"));map.getCanvas().classList.remove("tool-crosshair");redraw();
 }
 document.querySelector("#btn-finish").onclick=finishTool;
 document.querySelector("#btn-undo").onclick=()=>{if(sketch.coords.length){sketch.coords.pop();redraw();updateMeasure(liveFeature())}};
-document.querySelector("#btn-delete").onclick=()=>{sketch.coords=[];sketch.features=[];sketch.active=null;sketch.markers.forEach(m=>m.remove());sketch.markers=[];redraw();document.querySelector("#measure-card").classList.add("hidden")};
+document.querySelector("#btn-delete").onclick=()=>{sketch.coords=[];sketch.hover=null;sketch.features=[];sketch.active=null;sketch.markers.forEach(m=>m.remove());sketch.markers=[];redraw();document.querySelector("#measure-card").classList.add("hidden")};
 function updateMeasure(f){
  if(!f)return;const g=f.geometry.type;let value="",detail="";
  if(g==="LineString"){const km=turf.length(f,{units:"kilometers"});value=km<1?(km*1000).toFixed(2)+" m":km.toFixed(3)+" km";detail="Longitud geodésica"}
@@ -84,6 +94,25 @@ function updateMeasure(f){
  else {const [lng,lat]=f.geometry.coordinates;value=lat.toFixed(7)+", "+lng.toFixed(7);detail=f.properties.note||"WGS84 · EPSG:4326"}
  document.querySelector("#measure-value").textContent=value;document.querySelector("#measure-detail").textContent=detail;document.querySelector("#measure-card").classList.remove("hidden");
 }
+function formatMeasure(f){
+ const g=f.geometry.type;
+ if(g==="LineString"){const km=turf.length(f,{units:"kilometers"});return km<1?(km*1000).toFixed(2)+" m":km.toFixed(3)+" km"}
+ if(g==="Polygon"){const a=turf.area(f);return a<10000?a.toFixed(2)+" m²":(a/10000).toFixed(4)+" ha"}
+ return "";
+}
+function measureLabelFeature(f){
+ if(!f?.geometry)return null;
+ const label=formatMeasure(f);if(!label)return null;
+ let pt;
+ try{pt=f.geometry.type==="Polygon"?turf.centroid(f):turf.along(f,turf.length(f,{units:"kilometers"})/2,{units:"kilometers"})}catch(e){return null}
+ pt.properties={kind:"measure-label",label};return pt;
+}
+map.on("mousemove",e=>{
+ if(!sketch.mode||!(sketch.mode==="line"||sketch.mode==="polygon")||!sketch.coords.length)return;
+ sketch.hover=[e.lngLat.lng,e.lngLat.lat];redraw();
+ const preview=liveFeature(true);if(preview)updateMeasure(preview);
+});
+map.on("mouseout",()=>{if(sketch.hover){sketch.hover=null;redraw()}});
 function addCoordMarker(xy){const el=document.createElement("div");el.className="measure-label";el.textContent=xy[1].toFixed(6)+", "+xy[0].toFixed(6);sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(xy).addTo(map))}
 function addNoteMarker(xy,note){const el=document.createElement("div");el.className="annotation-label";el.textContent=note;sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(xy).addTo(map))}
 function selectionFC(){return {type:"FeatureCollection",features:sketch.active?[sketch.active]:sketch.features}}
@@ -117,4 +146,4 @@ potreeModal.onclick=e=>{if(e.target===potreeModal){potreeModal.classList.add("hi
 function fitFeature(f){try{const b=turf.bbox(f);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:90,duration:700})}catch(e){}}
 map.on("dblclick",e=>{if(sketch.mode==="line"||sketch.mode==="polygon"){e.preventDefault();finishTool();if(sketch.active)fitFeature(sketch.active)}});
 
-window.IVGeo={map,sketch,redraw,activateTool,finishTool,updateMeasure,fitFeature,dl,kml,setBasemap,getBasemap:()=>satellite?"satellite":"osm"};
+window.IVGeo={map,sketch,redraw,activateTool,finishTool,updateMeasure,fitFeature,dl,kml,setBasemap,bringSketchToFront,getBasemap:()=>satellite?"satellite":"osm"};
