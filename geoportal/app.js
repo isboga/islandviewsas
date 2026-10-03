@@ -11,7 +11,14 @@ map.on("load",()=>{core();discoverDroneDB()});map.on("mousemove",e=>document.get
 function vis(ids,on){ids.forEach(id=>map.getLayer(id)&&map.setLayoutProperty(id,"visibility",on?"visible":"none"))}
 document.querySelector("#toggle-buildings").onchange=e=>vis(["bf","bl"],e.target.checked);document.querySelector("#toggle-risk").onchange=e=>vis(["rf","rl"],e.target.checked);document.querySelector("#toggle-points").onchange=e=>vis(["pc"],e.target.checked);
 document.querySelector("#btn-home").onclick=()=>map.flyTo({center,zoom:13.2,pitch:25,bearing:-8});document.querySelector("#btn-3d").onclick=()=>map.easeTo({pitch:60,bearing:20,duration:800});document.querySelector("#btn-clear").onclick=()=>{ddbNames.forEach(n=>vis(["ddb-"+safe(n)],false));document.querySelectorAll(".ddb-check").forEach(x=>x.checked=false)};
-document.querySelector("#btn-style").onclick=()=>{satellite=!satellite;map.setStyle(satellite?SAT:OSM);map.once("style.load",core)};
+function setBasemap(name){
+ const wantSatellite=name!=="osm";
+ if(satellite===wantSatellite)return;
+ satellite=wantSatellite;
+ map.setStyle(satellite?SAT:OSM);
+ map.once("style.load",core);
+}
+document.querySelector("#btn-style").onclick=()=>setBasemap(satellite?"osm":"satellite");
 const modal=document.querySelector("#ddb-modal");document.querySelector("#btn-ddb").onclick=()=>modal.classList.remove("hidden");document.querySelector("#btn-close").onclick=()=>modal.classList.add("hidden");modal.onclick=e=>{if(e.target===modal)modal.classList.add("hidden")};
 function safe(s){return s.replace(/[^a-z0-9]/gi,"-").toLowerCase()}
 function addDdbLayer(name){const id="ddb-"+safe(name);if(map.getSource(id))return;const u=DDB.base+"/wms?service=WMS&version=1.1.1&request=GetMap&layers="+encodeURIComponent(name)+"&styles=&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true";map.addSource(id,{type:"raster",tiles:[u],tileSize:256});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":.92}})}
@@ -110,4 +117,4 @@ potreeModal.onclick=e=>{if(e.target===potreeModal){potreeModal.classList.add("hi
 function fitFeature(f){try{const b=turf.bbox(f);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:90,duration:700})}catch(e){}}
 map.on("dblclick",e=>{if(sketch.mode==="line"||sketch.mode==="polygon"){e.preventDefault();finishTool();if(sketch.active)fitFeature(sketch.active)}});
 
-window.IVGeo={map,sketch,redraw,activateTool,finishTool,updateMeasure,fitFeature,dl,kml};
+window.IVGeo={map,sketch,redraw,activateTool,finishTool,updateMeasure,fitFeature,dl,kml,setBasemap,getBasemap:()=>satellite?"satellite":"osm"};
