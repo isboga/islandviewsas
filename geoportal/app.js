@@ -17,3 +17,64 @@ function safe(s){return s.replace(/[^a-z0-9]/gi,"-").toLowerCase()}
 function addDdbLayer(name){const id="ddb-"+safe(name);if(map.getSource(id))return;const u=DDB.base+"/wms?service=WMS&version=1.1.1&request=GetMap&layers="+encodeURIComponent(name)+"&styles=&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true";map.addSource(id,{type:"raster",tiles:[u],tileSize:256});map.addLayer({id,type:"raster",source:id,layout:{visibility:"none"},paint:{"raster-opacity":.92}})}
 async function discoverDroneDB(){const box=document.querySelector("#ddb-layers"),dot=document.querySelector("#ddb-status");try{const r=await fetch(DDB.base+"/wms?service=WMS&request=GetCapabilities&version=1.3.0");if(!r.ok)throw Error(r.status);const xml=new DOMParser().parseFromString(await r.text(),"text/xml");const names=[...xml.querySelectorAll("Layer > Name")].map(n=>n.textContent.trim()).filter(Boolean);ddbNames=[...new Set(names)];if(!ddbNames.length)throw Error("Sin capas");box.innerHTML="";ddbNames.forEach(name=>{addDdbLayer(name);const row=document.createElement("label");row.className="layer-row";row.innerHTML='<input class="ddb-check" type="checkbox"><span>'+name+'</span>';row.querySelector("input").onchange=e=>vis(["ddb-"+safe(name)],e.target.checked);box.appendChild(row)});dot.className="dot ok"}catch(e){dot.className="dot fail";box.innerHTML='<div class="loading">No pude enumerar las capas por CORS o permisos. Puedes abrir el catálogo DroneDB aquí mismo; el visor queda preparado para WMS/WMTS.</div>'}}
 map.on("click","pc",e=>{const p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML("<strong>"+p.name+"</strong><br><span>"+p.type+"</span>").addTo(map)});
+
+/* === Island View GIS drawing / measurement / export tools === */
+const sketch={mode:null,coords:[],features:[],markers:[],active:null};
+function ensureSketch(){
+ if(!map.getSource("iv-sketch")) map.addSource("iv-sketch",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+ if(!map.getLayer("iv-sketch-fill")) map.addLayer({id:"iv-sketch-fill",type:"fill",source:"iv-sketch",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#a7d82e","fill-opacity":.22}});
+ if(!map.getLayer("iv-sketch-line")) map.addLayer({id:"iv-sketch-line",type:"line",source:"iv-sketch",filter:["in",["geometry-type"],["literal",["LineString","Polygon"]]],paint:{"line-color":"#d8ff77","line-width":3}});
+ if(!map.getLayer("iv-sketch-point")) map.addLayer({id:"iv-sketch-point",type:"circle",source:"iv-sketch",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":6,"circle-color":"#a7d82e","circle-stroke-color":"#fff","circle-stroke-width":2}});
+}
+function redraw(){
+ ensureSketch();const live=liveFeature();map.getSource("iv-sketch").setData({type:"FeatureCollection",features:[...sketch.features,...(live?[live]:[])]});
+}
+function liveFeature(){
+ if(!sketch.mode||!sketch.coords.length)return null;
+ if(sketch.mode==="line")return turf.lineString(sketch.coords,{kind:"distance"});
+ if(sketch.mode==="polygon"&&sketch.coords.length>2)return turf.polygon([[...sketch.coords,sketch.coords[0]]],{kind:"area"});
+ if((sketch.mode==="point"||sketch.mode==="note")&&sketch.coords.length)return turf.point(sketch.coords[0]);
+ return sketch.coords.length>1?turf.lineString(sketch.coords):turf.point(sketch.coords[0]);
+}
+function activateTool(mode){
+ sketch.mode=mode;sketch.coords=[];document.querySelectorAll(".ortho-tools [data-tool]").forEach(b=>b.classList.toggle("active",b.dataset.tool===mode));map.getCanvas().classList.toggle("tool-crosshair",!!mode);
+ document.querySelector("#measure-card").classList.remove("hidden");document.querySelector("#measure-value").textContent=mode==="polygon"?"Área":"—";document.querySelector("#measure-detail").textContent=mode==="note"?"Toca el mapa para ubicar la anotación":mode==="point"?"Toca el mapa para capturar coordenadas":"Toca para agregar vértices · Finalizar al terminar";redraw();
+}
+document.querySelectorAll(".ortho-tools [data-tool]").forEach(b=>b.onclick=()=>activateTool(b.dataset.tool));
+map.on("click",e=>{
+ if(!sketch.mode)return;
+ const xy=[e.lngLat.lng,e.lngLat.lat];
+ if(sketch.mode==="point"){const f=turf.point(xy,{name:"Geoposición",lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addCoordMarker(xy);finishTool();return}
+ if(sketch.mode==="note"){const note=prompt("Texto de la anotación:","Observación");if(note!==null){const f=turf.point(xy,{name:"Anotación",note,lat:e.lngLat.lat,lng:e.lngLat.lng});sketch.features.push(f);sketch.active=f;addNoteMarker(xy,note);finishTool()}return}
+ sketch.coords.push(xy);redraw();updateMeasure(liveFeature());
+});
+function finishTool(){
+ let f=liveFeature();
+ if(sketch.mode==="line"&&sketch.coords.length>=2){f=turf.lineString(sketch.coords,{name:"Medición lineal"});sketch.features.push(f);sketch.active=f}
+ if(sketch.mode==="polygon"&&sketch.coords.length>=3){f=turf.polygon([[...sketch.coords,sketch.coords[0]]],{name:"Área seleccionada"});sketch.features.push(f);sketch.active=f}
+ if(f)updateMeasure(f);sketch.coords=[];sketch.mode=null;document.querySelectorAll(".ortho-tools button").forEach(b=>b.classList.remove("active"));map.getCanvas().classList.remove("tool-crosshair");redraw();
+}
+document.querySelector("#btn-finish").onclick=finishTool;
+document.querySelector("#btn-undo").onclick=()=>{if(sketch.coords.length){sketch.coords.pop();redraw();updateMeasure(liveFeature())}};
+document.querySelector("#btn-delete").onclick=()=>{sketch.coords=[];sketch.features=[];sketch.active=null;sketch.markers.forEach(m=>m.remove());sketch.markers=[];redraw();document.querySelector("#measure-card").classList.add("hidden")};
+function updateMeasure(f){
+ if(!f)return;const g=f.geometry.type;let value="",detail="";
+ if(g==="LineString"){const km=turf.length(f,{units:"kilometers"});value=km<1?(km*1000).toFixed(2)+" m":km.toFixed(3)+" km";detail="Longitud geodésica"}
+ else if(g==="Polygon"){const a=turf.area(f);value=a<10000?a.toFixed(2)+" m²":(a/10000).toFixed(4)+" ha";detail="Área · "+(a/1e6).toFixed(5)+" km²"}
+ else {const [lng,lat]=f.geometry.coordinates;value=lat.toFixed(7)+", "+lng.toFixed(7);detail=f.properties.note||"WGS84 · EPSG:4326"}
+ document.querySelector("#measure-value").textContent=value;document.querySelector("#measure-detail").textContent=detail;document.querySelector("#measure-card").classList.remove("hidden");
+}
+function addCoordMarker(xy){const el=document.createElement("div");el.className="measure-label";el.textContent=xy[1].toFixed(6)+", "+xy[0].toFixed(6);sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(xy).addTo(map))}
+function addNoteMarker(xy,note){const el=document.createElement("div");el.className="annotation-label";el.textContent=note;sketch.markers.push(new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(xy).addTo(map))}
+function selectionFC(){return {type:"FeatureCollection",features:sketch.active?[sketch.active]:sketch.features}}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function kml(fc){const placemarks=fc.features.map((f,i)=>{const p=f.properties||{},n=(p.name||("Selección "+(i+1))).replace(/[<>&]/g,"");let geom="";if(f.geometry.type==="Point"){const c=f.geometry.coordinates;geom="<Point><coordinates>"+c[0]+","+c[1]+",0</coordinates></Point>"}if(f.geometry.type==="LineString")geom="<LineString><tessellate>1</tessellate><coordinates>"+f.geometry.coordinates.map(c=>c[0]+","+c[1]+",0").join(" ")+"</coordinates></LineString>";if(f.geometry.type==="Polygon")geom="<Polygon><outerBoundaryIs><LinearRing><coordinates>"+f.geometry.coordinates[0].map(c=>c[0]+","+c[1]+",0").join(" ")+"</coordinates></LinearRing></outerBoundaryIs></Polygon>";return "<Placemark><name>"+n+"</name><description>"+(p.note||"Island View Geoportal")+"</description>"+geom+"</Placemark>"}).join("");return '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Island View - Selección</name>'+placemarks+"</Document></kml>"}
+document.querySelector("#btn-export").onclick=()=>document.querySelector("#export-menu").classList.toggle("hidden");
+document.querySelectorAll("[data-export]").forEach(b=>b.onclick=async()=>{const fc=selectionFC();if(!fc.features.length)return alert("Primero crea o selecciona una geometría.");const t=b.dataset.export;
+ if(t==="geojson")dl(new Blob([JSON.stringify(fc,null,2)],{type:"application/geo+json"}),"island-view-seleccion.geojson");
+ if(t==="kml")dl(new Blob([kml(fc)],{type:"application/vnd.google-earth.kml+xml"}),"island-view-seleccion.kml");
+ if(t==="kmz"){const z=new JSZip();z.file("doc.kml",kml(fc));dl(await z.generateAsync({type:"blob"}),"island-view-seleccion.kmz")}
+ if(t==="shp"){try{const zip=shpwrite.zip(fc);dl(new Blob([zip],{type:"application/zip"}),"island-view-seleccion-shapefile.zip")}catch(e){alert("El exportador Shapefile no pudo procesar esta geometría. Prueba GeoJSON/KML o separa geometrías por tipo.")}}
+ document.querySelector("#export-menu").classList.add("hidden");
+});
+map.on("style.load",()=>{setTimeout(()=>{ensureSketch();redraw()},0)});
