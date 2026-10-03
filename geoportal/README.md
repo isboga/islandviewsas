@@ -118,3 +118,12 @@ No existe `package.json`, linter, test suite ni build configurado. Las verificac
 - comprobación manual del despliegue de GitHub Pages;
 - pruebas en Safari/iPad, móvil y escritorio para dibujo, importación, exportación y 3D.
 
+
+
+## Centro de carga de productos
+
+El geoportal usa una jerarquía **Proyecto → Productos derivados → Tipo**. El registro público vive en `products.json` y clasifica ortomosaicos, modelos 3D, nubes de puntos, DSM/DTM, térmico, vectores, fotografías/360 y documentos.
+
+El asistente de carga se habilita con `?admin=1`. Este modo no constituye autenticación: en la versión estática actual sirve como espacio de preparación. Los borradores y referencias privadas se guardan en IndexedDB del navegador y nunca se publican automáticamente. Para una administración multiusuario o carga persistente se requiere un backend autenticado.
+
+Los archivos geoespaciales pesados no deben almacenarse directamente en GitHub Pages. Se recomienda conservar originales en DroneDB o almacenamiento de objetos y registrar en el geoportal endpoints web optimizados (WMS/WMTS/XYZ/COG, Potree o GLB según el producto). `products.json` conserva metadatos y referencias públicas autorizadas.
