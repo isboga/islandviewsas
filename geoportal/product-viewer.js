@@ -1,7 +1,7 @@
 (()=>{"use strict";
 const q=new URLSearchParams(location.search),projectKey=q.get("project")||"sai-dronedb",path=q.get("path")||"",hash=q.get("hash")||"",rawType=Number(q.get("type")||0),$=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const TYPES={DIRECTORY:1,GENERIC:2,GEOIMAGE:3,GEORASTER:4,POINTCLOUD:5,IMAGE:6,DRONEDB:7,MARKDOWN:8,VIDEO:9,GEOVIDEO:10,MODEL:11,PANORAMA:12,GEOPANORAMA:13,VECTOR:14,GAUSSIAN_SPLAT:15,TILES3D:16},NAMES={2:"Archivo",3:"Fotografía georreferenciada",4:"GeoTIFF / GeoRaster",5:"Nube de puntos",6:"Fotografía",8:"Documento",9:"Video",10:"Video georreferenciado",11:"Modelo 3D",12:"Panorama",13:"Panorama georreferenciado",14:"Vector GIS",15:"Gaussian Splat",16:"3D Tiles"};
-let project=null,base="",entry={path,hash,type:rawType},siblings=[],map=null,drawMode=null,lastMeasureMode=null,coords=[],measureMarkers=[],drawSourceReady=false,sb=null,portalProjectId=null,potreeReadyTimer=null,areaUnit=localStorage.getItem("iv-area-unit")||"ha",backUrl="./dataset-explorer.html?project="+encodeURIComponent(projectKey);
+let project=null,base="",entry={path,hash,type:rawType},siblings=[],map=null,drawMode=null,lastMeasureMode=null,coords=[],vertexMarkers=[],measureLabelMarker=null,drawSourceReady=false,sb=null,portalProjectId=null,potreeReadyTimer=null,areaUnit=localStorage.getItem("iv-area-unit")||"ha",backUrl="./dataset-explorer.html?project="+encodeURIComponent(projectKey);
 function ext(p){return(String(p||"").split(".").pop()||"").toLowerCase()}
 function inferType(e){const x=ext(e.path);if(["las","laz","copc"].includes(x)||/\.copc\.laz$/i.test(String(e.path||"")))return TYPES.POINTCLOUD;if(["tif","tiff"].includes(x))return TYPES.GEORASTER;if(e.type)return e.type;if(["obj","glb","gltf","fbx","ply"].includes(x))return TYPES.MODEL;if(["geojson","json","kml","kmz","gpkg","shp"].includes(x))return TYPES.VECTOR;if(["jpg","jpeg","png","webp"].includes(x))return TYPES.IMAGE;if(["mp4","mov","webm"].includes(x))return TYPES.VIDEO;return TYPES.GENERIC}
 function icon(e){const t=inferType(e);return t===4?"▧":t===5?"◌":[11,15,16].includes(t)?"◇":t===14?"⌑":[3,6,12,13].includes(t)?"◉":[9,10].includes(t)?"▶":"▤"}
@@ -42,25 +42,35 @@ function fmtArea(m2){if(areaUnit==="km2")return (m2/1e6).toFixed(6)+" km²";if(a
 function syncAreaUnitUI(){document.querySelectorAll("[data-area-unit]").forEach(b=>b.classList.toggle("active",b.dataset.areaUnit===areaUnit));$("#pv-area-units").classList.toggle("hidden",(drawMode||lastMeasureMode)!=="area")}
 function sameCoord(a,b){return !!a&&!!b&&Math.abs(a[0]-b[0])<1e-9&&Math.abs(a[1]-b[1])<1e-9}
 function cleanDoubleClickPoint(){while(coords.length>1&&sameCoord(coords[coords.length-1],coords[coords.length-2]))coords.pop()}
-function clearMeasureMarkers(){measureMarkers.forEach(m=>{try{m.remove()}catch{}});measureMarkers=[]}
-function addMeasureMarker(coord,kind,text=""){
- if(!map||!coord)return;
- const el=document.createElement("div");el.className="iv-map-measure "+kind;
- if(kind==="iv-vertex"){const dot=document.createElement("span");dot.textContent=text;el.appendChild(dot)}
- else el.textContent=text;
- const m=new maplibregl.Marker({element:el,anchor:"center"}).setLngLat(coord).addTo(map);measureMarkers.push(m);return m;
+function clearMeasureMarkers(){
+ vertexMarkers.forEach(m=>{try{m.remove()}catch{}});vertexMarkers=[];
+ if(measureLabelMarker){try{measureLabelMarker.remove()}catch{}measureLabelMarker=null}
 }
-function renderMeasureMarkers(active,mode){
- clearMeasureMarkers();
- coords.forEach((c,i)=>addMeasureMarker(c,"iv-vertex",String(i+1)));
+function makeMarker(coord,kind,text=""){
+ if(!map||!coord)return null;
+ const el=document.createElement("div");el.className="iv-map-measure "+kind;el.textContent=text;
+ return new maplibregl.Marker({element:el,anchor:"center"}).setLngLat(coord).addTo(map);
+}
+function addVertexMarker(coord,index){const m=makeMarker(coord,"iv-vertex",String(index));if(m)vertexMarkers.push(m)}
+function setMeasureLabel(coord,kind,text){
+ if(measureLabelMarker){try{measureLabelMarker.remove()}catch{}measureLabelMarker=null}
+ measureLabelMarker=makeMarker(coord,"iv-measure-label "+kind,text);
+}
+function areaLabelPoint(poly){
+ let p=turf.centerOfMass(poly);
+ try{if(!turf.booleanPointInPolygon(p,poly))p=turf.pointOnFeature(poly)}catch{p=turf.pointOnFeature(poly)}
+ return p;
+}
+function updateMeasureLabel(active,mode){
  if(mode==="distance"&&active.length>1){
   const line=turf.lineString(active),total=turf.length(line,{units:"kilometers"}),mid=turf.along(line,total/2,{units:"kilometers"});
-  addMeasureMarker(mid.geometry.coordinates,"iv-measure-label iv-distance-label",fmtDistance(total));
+  setMeasureLabel(mid.geometry.coordinates,"iv-distance-label",fmtDistance(total));return;
  }
  if(mode==="area"&&active.length>2){
-  const poly=turf.polygon([[...active,active[0]]]),a=turf.area(poly),center=turf.pointOnFeature(poly);
-  addMeasureMarker(center.geometry.coordinates,"iv-measure-label iv-area-label",fmtArea(a));
+  const poly=turf.polygon([[...active,active[0]]]),a=turf.area(poly),center=areaLabelPoint(poly);
+  setMeasureLabel(center.geometry.coordinates,"iv-area-label","Área · "+fmtArea(a));return;
  }
+ if(measureLabelMarker){try{measureLabelMarker.remove()}catch{}measureLabelMarker=null}
 }
 function drawFC(preview=null){
  const mode=drawMode||lastMeasureMode,active=preview?[...coords,preview]:coords.slice(),fs=[];
@@ -75,20 +85,21 @@ function drawFC(preview=null){
  if(["area","stats"].includes(mode)&&active.length>2){
   const ring=[...active,active[0]],poly=turf.polygon([ring],{measurement:true});fs.push(poly);
   if(mode==="area"){
-   const a=turf.area(poly),center=turf.pointOnFeature(poly);center.properties={label:fmtArea(a),labelType:"area"};fs.push(center);measure("Área",fmtArea(a));syncAreaUnitUI();
+   const a=turf.area(poly),center=areaLabelPoint(poly);center.properties={label:"Área · "+fmtArea(a),labelType:"area"};fs.push(center);measure("Área",fmtArea(a));syncAreaUnitUI();
   }
  }
  map.getSource("pv-draw")?.setData({type:"FeatureCollection",features:fs});
- renderMeasureMarkers(active,mode);
+ updateMeasureLabel(active,mode);
 }
 async function handleMapClick(e){
  if(!drawMode)return;
  if(drawMode==="inspect"){if(entry.type===4)try{const v=await getJSON("/raster-point-value?path="+encodeURIComponent(entry.path)+"&x="+e.lngLat.lng+"&y="+e.lngLat.lat);measure("Valor raster",JSON.stringify(v));}catch(err){measure("Coordenada",e.lngLat.lng.toFixed(7)+", "+e.lngLat.lat.toFixed(7))}else measure("Coordenada",e.lngLat.lng.toFixed(7)+", "+e.lngLat.lat.toFixed(7));return}
- const c=[e.lngLat.lng,e.lngLat.lat];if(!sameCoord(coords[coords.length-1],c))coords.push(c);drawFC();
+ const c=[e.lngLat.lng,e.lngLat.lat];if(!sameCoord(coords[coords.length-1],c)){coords.push(c);addVertexMarker(c,coords.length)}drawFC();
 }
 function measure(title,value){$("#pv-measure").innerHTML="<strong>"+esc(title)+"</strong><div>"+esc(value)+"</div>";$("#pv-measure").classList.remove("hidden")}
 async function finishDraw(){
  cleanDoubleClickPoint();
+ while(vertexMarkers.length>coords.length){const m=vertexMarkers.pop();try{m.remove()}catch{}}
  const mode=drawMode;
  if(mode==="distance"&&coords.length>1){const l=turf.length(turf.lineString(coords),{units:"kilometers"});measure("Distancia total",fmtDistance(l))}
  if(mode==="area"&&coords.length>2){const a=turf.area(turf.polygon([[...coords,coords[0]]]));measure("Área total",fmtArea(a))}
