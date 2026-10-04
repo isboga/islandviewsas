@@ -37,22 +37,65 @@
 <body>
 <div class="uv-shell">
 <header class="uv-topbar">
- <a class="uv-brand" href="./" aria-label="Volver al geoportal"><span class="uv-mark">IV</span><span><strong>ISLAND VIEW</strong><small>UNIFIED GEOSPATIAL VIEWER</small></span></a>
- <div class="uv-project"><strong id="uv-title">Visor geoespacial</strong><small id="uv-subtitle">Cargando proyecto…</small></div>
- <div class="uv-actions"><button id="uv-2d" class="active">2D</button><button id="uv-3d">3D</button><button id="uv-full">⛶</button><a href="./">Cerrar</a></div>
+ <a class="uv-brand" href="./" aria-label="Volver al geoportal">
+  <span class="uv-mark">IV</span>
+  <span class="uv-brand-copy"><strong>ISLAND VIEW</strong><small>GEOSPATIAL PLATFORM</small></span>
+ </a>
+ <div class="uv-project">
+  <span class="uv-breadcrumb">PROYECTOS / VISOR</span>
+  <strong id="uv-title">Visor geoespacial</strong>
+  <small id="uv-subtitle">Cargando proyecto…</small>
+ </div>
+ <div class="uv-actions">
+  <div class="uv-view-switch" aria-label="Modo de visualización"><button id="uv-2d" class="active">2D</button><button id="uv-3d">3D</button></div>
+  <button id="uv-full" class="uv-icon-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+  <a class="uv-close" href="./" title="Cerrar visor">×</a>
+ </div>
 </header>
+
 <aside class="uv-sidebar">
- <div class="uv-side-head"><strong>Contenido</strong><button id="uv-collapse" title="Ocultar panel">‹</button></div>
- <section><h2>Capas del proyecto</h2><div id="uv-layers" class="uv-layers"><div class="uv-empty">Cargando productos…</div></div></section>
- <section><h2>Medición y dibujo</h2><div class="uv-tools"><button data-draw="point">Punto</button><button data-draw="line">Distancia</button><button data-draw="polygon">Área</button><button id="uv-clear">Limpiar</button></div><div id="uv-measures" class="uv-measures"></div></section>
- <section><h2>Escena</h2><label class="uv-range">Inclinación 3D<input id="uv-tilt" type="range" min="0" max="70" value="45"></label><label class="uv-check"><input id="uv-edl" type="checkbox" checked> EDL para nube de puntos</label></section>
+ <div class="uv-side-head">
+  <div><span>EXPLORADOR</span><strong>Contenido del proyecto</strong></div>
+  <button id="uv-collapse" title="Ocultar panel" aria-label="Ocultar panel">‹</button>
+ </div>
+ <section class="uv-section uv-content-section">
+  <div class="uv-section-title"><h2>Productos y capas</h2><span class="uv-count">LIVE</span></div>
+  <div id="uv-layers" class="uv-layers"><div class="uv-empty"><span class="uv-empty-dot"></span><div><strong>Preparando catálogo</strong><small>Cargando productos geoespaciales…</small></div></div></div>
+ </section>
+ <section class="uv-section uv-results-section">
+  <div class="uv-section-title"><h2>Mediciones</h2><small>Resultados</small></div>
+  <div id="uv-measures" class="uv-measures"><div class="uv-hint">Las mediciones realizadas aparecerán aquí.</div></div>
+ </section>
+ <section class="uv-section uv-scene-section">
+  <div class="uv-section-title"><h2>Visualización</h2></div>
+  <label class="uv-range"><span>Inclinación 3D</span><input id="uv-tilt" type="range" min="0" max="70" value="45"></label>
+  <label class="uv-check"><input id="uv-edl" type="checkbox" checked><span><strong>Eye-Dome Lighting</strong><small>Mejora la profundidad de nubes de puntos</small></span></label>
+ </section>
+ <div class="uv-side-footer"><span class="uv-online-dot"></span><span>Island View Cloud</span><small>EPSG:3857</small></div>
 </aside>
-<div id="view" class="uv-view"><div id="uv-loading" class="uv-loading"><span></span><strong>Preparando visor geoespacial…</strong></div><div id="uv-message" class="uv-message hidden"></div></div>
-<footer class="uv-status"><span id="uv-status">Inicializando Giro3D…</span><span>EPSG:3857 · Island View S.A.S.</span></footer>
+
+<div id="view" class="uv-view">
+ <div class="uv-map-tools" aria-label="Herramientas GIS">
+  <button data-draw="point" title="Medir punto" aria-label="Medir punto"><span>⌖</span><em>Punto</em></button>
+  <button data-draw="line" title="Medir distancia" aria-label="Medir distancia"><span>╱</span><em>Distancia</em></button>
+  <button data-draw="polygon" title="Medir área" aria-label="Medir área"><span>⬡</span><em>Área</em></button>
+  <i></i>
+  <button id="uv-clear" title="Limpiar mediciones" aria-label="Limpiar mediciones"><span>⌫</span><em>Limpiar</em></button>
+ </div>
+ <div class="uv-map-badge"><span></span>ISLAND VIEW GIS</div>
+ <div class="uv-help">Arrastra para navegar · Rueda/pellizca para zoom · 3D para inclinar</div>
+ <div id="uv-loading" class="uv-loading"><span></span><strong>Preparando visor geoespacial…</strong><small>Inicializando motor cartográfico</small></div>
+ <div id="uv-message" class="uv-message hidden"></div>
+</div>
+
+<footer class="uv-status">
+ <div><span class="uv-status-dot"></span><span id="uv-status">Inicializando Giro3D…</span></div>
+ <div><span>WebGL</span><span>EPSG:3857</span><strong>Island View S.A.S.</strong></div>
+</footer>
 </div>
 <script>
 window.addEventListener("error",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="Error en "+(window.__IV_STAGE||"inicio")+": "+(e.message||"módulo no disponible")}},true);
 window.addEventListener("unhandledrejection",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="No se pudo completar la carga: "+(e.reason&&e.reason.message?e.reason.message:String(e.reason||"error desconocido"))}});
 </script>
-<script type="module" src="./unified-viewer.js?v=20261004-1222"></script>
+<script type="module" src="./unified-viewer.js?v=20261004-1230"></script>
 </body></html>
