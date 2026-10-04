@@ -1,7 +1,7 @@
 (()=>{"use strict";
 const q=new URLSearchParams(location.search),projectKey=q.get("project")||"sai-dronedb",path=q.get("path")||"",hash=q.get("hash")||"",rawType=Number(q.get("type")||0),$=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const TYPES={DIRECTORY:1,GENERIC:2,GEOIMAGE:3,GEORASTER:4,POINTCLOUD:5,IMAGE:6,DRONEDB:7,MARKDOWN:8,VIDEO:9,GEOVIDEO:10,MODEL:11,PANORAMA:12,GEOPANORAMA:13,VECTOR:14,GAUSSIAN_SPLAT:15,TILES3D:16},NAMES={2:"Archivo",3:"Fotografía georreferenciada",4:"GeoTIFF / GeoRaster",5:"Nube de puntos",6:"Fotografía",8:"Documento",9:"Video",10:"Video georreferenciado",11:"Modelo 3D",12:"Panorama",13:"Panorama georreferenciado",14:"Vector GIS",15:"Gaussian Splat",16:"3D Tiles"};
-let project=null,base="",entry={path,hash,type:rawType},siblings=[],map=null,drawMode=null,lastMeasureMode=null,coords=[],drawSourceReady=false,sb=null,portalProjectId=null,potreeReadyTimer=null,areaUnit=localStorage.getItem("iv-area-unit")||"ha",backUrl="./dataset-explorer.html?project="+encodeURIComponent(projectKey);
+let project=null,base="",entry={path,hash,type:rawType},siblings=[],map=null,drawMode=null,lastMeasureMode=null,coords=[],measureMarkers=[],drawSourceReady=false,sb=null,portalProjectId=null,potreeReadyTimer=null,areaUnit=localStorage.getItem("iv-area-unit")||"ha",backUrl="./dataset-explorer.html?project="+encodeURIComponent(projectKey);
 function ext(p){return(String(p||"").split(".").pop()||"").toLowerCase()}
 function inferType(e){const x=ext(e.path);if(["las","laz","copc"].includes(x)||/\.copc\.laz$/i.test(String(e.path||"")))return TYPES.POINTCLOUD;if(["tif","tiff"].includes(x))return TYPES.GEORASTER;if(e.type)return e.type;if(["obj","glb","gltf","fbx","ply"].includes(x))return TYPES.MODEL;if(["geojson","json","kml","kmz","gpkg","shp"].includes(x))return TYPES.VECTOR;if(["jpg","jpeg","png","webp"].includes(x))return TYPES.IMAGE;if(["mp4","mov","webm"].includes(x))return TYPES.VIDEO;return TYPES.GENERIC}
 function icon(e){const t=inferType(e);return t===4?"▧":t===5?"◌":[11,15,16].includes(t)?"◇":t===14?"⌑":[3,6,12,13].includes(t)?"◉":[9,10].includes(t)?"▶":"▤"}
@@ -42,6 +42,26 @@ function fmtArea(m2){if(areaUnit==="km2")return (m2/1e6).toFixed(6)+" km²";if(a
 function syncAreaUnitUI(){document.querySelectorAll("[data-area-unit]").forEach(b=>b.classList.toggle("active",b.dataset.areaUnit===areaUnit));$("#pv-area-units").classList.toggle("hidden",(drawMode||lastMeasureMode)!=="area")}
 function sameCoord(a,b){return !!a&&!!b&&Math.abs(a[0]-b[0])<1e-9&&Math.abs(a[1]-b[1])<1e-9}
 function cleanDoubleClickPoint(){while(coords.length>1&&sameCoord(coords[coords.length-1],coords[coords.length-2]))coords.pop()}
+function clearMeasureMarkers(){measureMarkers.forEach(m=>{try{m.remove()}catch{}});measureMarkers=[]}
+function addMeasureMarker(coord,kind,text=""){
+ if(!map||!coord)return;
+ const el=document.createElement("div");el.className="iv-map-measure "+kind;
+ if(kind==="iv-vertex"){const dot=document.createElement("span");dot.textContent=text;el.appendChild(dot)}
+ else el.textContent=text;
+ const m=new maplibregl.Marker({element:el,anchor:"center"}).setLngLat(coord).addTo(map);measureMarkers.push(m);return m;
+}
+function renderMeasureMarkers(active,mode){
+ clearMeasureMarkers();
+ coords.forEach((c,i)=>addMeasureMarker(c,"iv-vertex",String(i+1)));
+ if(mode==="distance"&&active.length>1){
+  const line=turf.lineString(active),total=turf.length(line,{units:"kilometers"}),mid=turf.along(line,total/2,{units:"kilometers"});
+  addMeasureMarker(mid.geometry.coordinates,"iv-measure-label iv-distance-label",fmtDistance(total));
+ }
+ if(mode==="area"&&active.length>2){
+  const poly=turf.polygon([[...active,active[0]]]),a=turf.area(poly),center=turf.pointOnFeature(poly);
+  addMeasureMarker(center.geometry.coordinates,"iv-measure-label iv-area-label",fmtArea(a));
+ }
+}
 function drawFC(preview=null){
  const mode=drawMode||lastMeasureMode,active=preview?[...coords,preview]:coords.slice(),fs=[];
  coords.forEach((c,i)=>fs.push(turf.point(c,{vertex:true,vertexNo:i+1})));
@@ -59,6 +79,7 @@ function drawFC(preview=null){
   }
  }
  map.getSource("pv-draw")?.setData({type:"FeatureCollection",features:fs});
+ renderMeasureMarkers(active,mode);
 }
 async function handleMapClick(e){
  if(!drawMode)return;
@@ -82,7 +103,7 @@ function openProduct(){if([3,4,14].includes(entry.type)){initMap();return}if(ent
  const native=nativePotreeUrl();
  if(native){document.querySelector(".pv-shell").classList.add("native-potree");openFrame(native,"POTREE · DRONEDB");return}
  openFrame("./pointcloud-viewer.html?embedded=1&v=20261005-0010&project="+encodeURIComponent(projectKey)+"&path="+encodeURIComponent(entry.path)+"&hash="+encodeURIComponent(entry.hash||""),"POTREE");return}if([11,16].includes(entry.type)){openFrame("./unified-viewer.html?embedded=1&mode=product&project="+encodeURIComponent(projectKey)+"&path="+encodeURIComponent(entry.path)+"&product="+encodeURIComponent(productId(entry)),"3D");return}openMedia()}
-document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{const t=b.dataset.tool;if(t==="clear"){coords=[];drawMode=null;lastMeasureMode=null;if(drawSourceReady)map.getSource("pv-draw").setData({type:"FeatureCollection",features:[]});$("#pv-measure").classList.add("hidden");$("#pv-area-units").classList.add("hidden");if(map)map.getCanvas().style.cursor="";document.querySelectorAll("[data-tool]").forEach(x=>x.classList.remove("active"));return}drawMode=t;lastMeasureMode=null;coords=[];syncAreaUnitUI();if(map)map.getCanvas().style.cursor="crosshair";if(drawSourceReady)map.getSource("pv-draw").setData({type:"FeatureCollection",features:[]});$("#pv-measure").classList.add("hidden");document.querySelectorAll("[data-tool]").forEach(x=>x.classList.toggle("active",x===b));status(t==="inspect"?"Toca el producto para consultar":t==="area"?"Toca los vértices · doble clic para cerrar el polígono":t==="distance"?"Toca los puntos · doble clic para terminar la distancia":"Toca para añadir vértices · doble clic para finalizar")});
+document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{const t=b.dataset.tool;if(t==="clear"){coords=[];drawMode=null;lastMeasureMode=null;clearMeasureMarkers();if(drawSourceReady)map.getSource("pv-draw").setData({type:"FeatureCollection",features:[]});$("#pv-measure").classList.add("hidden");$("#pv-area-units").classList.add("hidden");if(map)map.getCanvas().style.cursor="";document.querySelectorAll("[data-tool]").forEach(x=>x.classList.remove("active"));return}drawMode=t;lastMeasureMode=null;coords=[];clearMeasureMarkers();syncAreaUnitUI();if(map)map.getCanvas().style.cursor="crosshair";if(drawSourceReady)map.getSource("pv-draw").setData({type:"FeatureCollection",features:[]});$("#pv-measure").classList.add("hidden");document.querySelectorAll("[data-tool]").forEach(x=>x.classList.toggle("active",x===b));status(t==="inspect"?"Toca el producto para consultar":t==="area"?"Toca los vértices · doble clic para cerrar el polígono":t==="distance"?"Toca los puntos · doble clic para terminar la distancia":"Toca para añadir vértices · doble clic para finalizar")});
 document.querySelectorAll("[data-area-unit]").forEach(b=>b.onclick=()=>{areaUnit=b.dataset.areaUnit;localStorage.setItem("iv-area-unit",areaUnit);syncAreaUnitUI();if((drawMode||lastMeasureMode)==="area"&&coords.length>2)drawFC()});
 syncAreaUnitUI();
 window.addEventListener("message",e=>{const d=e.data;if(!d||d.source!=="island-view-potree")return;if(d.type==="loaded"){clearTimeout(potreeReadyTimer);potreeReadyTimer=null;return}if(d.type==="load-failed"){clearTimeout(potreeReadyTimer);potreeReadyTimer=null;openNativePotree()}});function openNativePotree(){const u=nativePotreeUrl();if(u){status("Abriendo Potree nativo de DroneDB…");openFrame(u,"POTREE · DRONEDB");document.querySelector(".pv-shell").classList.add("native-potree")}}
