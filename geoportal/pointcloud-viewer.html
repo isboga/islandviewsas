@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="https://hub.dronedb.app/potree/libs/jquery-ui/jquery-ui.min.css">
 <link rel="stylesheet" href="https://hub.dronedb.app/potree/libs/spectrum/spectrum.css">
 <link rel="stylesheet" href="https://hub.dronedb.app/potree/libs/jstree/themes/mixed/style.css">
-<link rel="stylesheet" href="./pointcloud-viewer.css?v=20261004-2330"></head><body>
+<link rel="stylesheet" href="./pointcloud-viewer.css?v=20261004-2420"></head><body>
 <header class="pc-head"><a href="javascript:history.back()" class="pc-brand"><span>IV</span><strong>ISLAND <b>VIEW</b></strong></a><div class="pc-title"><strong id="pc-name">Nube de puntos</strong><small>Potree · COPC</small></div><div class="pc-actions"><button id="pc-fit" title="Encuadrar">⌂</button><button id="pc-full" title="Pantalla completa">⛶</button><button onclick="history.back()" title="Volver">←</button></div></header>
 <div id="potree_sidebar_container"></div><div id="potree_render_area"></div>
 <button id="pc-potree-tools" class="pc-potree-tools" title="Abrir todas las herramientas de Potree">☰ <span>Potree</span></button><div class="pc-toolbar">
@@ -13,7 +13,7 @@
  <button data-tool="height" title="Medir altura"><span>↕</span><em>Altura</em></button>
  <i></i><button data-tool="profile" title="Perfil"><span>⌁</span><em>Perfil</em></button>
  <button data-tool="volume" title="Volumen"><span>◇</span><em>Volumen</em></button><button data-tool="clip" title="Caja de recorte"><span>▣</span><em>Recorte 3D</em></button>
- <i></i><button id="pc-export" title="Exportar mediciones GeoJSON"><span>⇩</span><em>Exportar GeoJSON</em></button><button id="pc-clear" title="Limpiar"><span>⌫</span><em>Limpiar</em></button>
+ <i></i><button id="pc-export" title="Exportar mediciones GeoJSON"><span><svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 20h14"/></svg></span><em>Exportar GeoJSON</em></button><button id="pc-clear" title="Limpiar"><span><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3m2 0-1 13H8L7 7M10 11v5m4-5v5"/></svg></span><em>Limpiar</em></button>
 </div>
 <div class="pc-display">
  <label><input id="pc-edl" type="checkbox" checked> EDL</label>
@@ -26,4 +26,4 @@
 <aside id="pc-class-panel" class="pc-class-panel hidden"><header><strong>Clasificación LAS</strong><button id="pc-class-close">×</button></header><div id="pc-class-list"></div><footer><button id="pc-class-all">Todas</button><button id="pc-class-none">Ninguna</button></footer></aside>
 <div id="pc-loading" class="pc-loading"><span></span><strong>Cargando nube de puntos…</strong><small>Potree · COPC streaming</small></div><div id="pc-error" class="pc-error hidden"></div>
 <script src="https://hub.dronedb.app/potree/libs/jquery/jquery-3.1.1.min.js"></script><script src="https://hub.dronedb.app/potree/libs/spectrum/spectrum.js"></script><script src="https://hub.dronedb.app/potree/libs/jquery-ui/jquery-ui.min.js"></script><script src="https://hub.dronedb.app/potree/libs/three.js/build/three.min.js"></script><script src="https://hub.dronedb.app/potree/libs/three.js/extra/lines.js"></script><script src="https://hub.dronedb.app/potree/libs/other/BinaryHeap.js"></script><script src="https://hub.dronedb.app/potree/libs/tween/tween.min.js"></script><script src="https://hub.dronedb.app/potree/libs/d3/d3.js"></script><script src="https://hub.dronedb.app/potree/libs/proj4/proj4.js"></script><script src="https://hub.dronedb.app/potree/libs/i18next/i18next.js"></script><script src="https://hub.dronedb.app/potree/libs/jstree/jstree.js"></script><script src="https://hub.dronedb.app/potree/build/potree/potree.js"></script><script src="https://hub.dronedb.app/potree/libs/copc/index.js"></script><script src="https://hub.dronedb.app/potree/libs/plasio/js/laslaz.js"></script>
-<script src="./pointcloud-viewer.js?v=20261004-2330"></script></body></html>
+<script src="./pointcloud-viewer.js?v=20261004-2420"></script></body></html>
