@@ -12,7 +12,7 @@ const TYPES=[
 ];
 const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const localProducts=[];
+const localProducts=[];let secureProducts=[];
 const ADMIN=new URLSearchParams(location.search).get("admin")==="1";
 let projects=[],published=[],step=1,draft={};
 function uid(){return "ivp-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7)}
@@ -96,7 +96,7 @@ async function loadDrafts(){try{const d=await db();const rows=await new Promise(
 function refreshCounts(){
  const b=$("#product-upload-open");if(b)b.title=(published.length+localProducts.length)+" productos registrados";
 }
-function projectProducts(projectId){return [...published,...(ADMIN?localProducts:[])].filter(p=>p.projectId===projectId&&((p.access||"public")==="public"||ADMIN))}
+function projectProducts(projectId){return [...published,...secureProducts,...(ADMIN?localProducts:[])].filter(p=>p.projectId===projectId&&((p.access||"public")==="public"||p.sourceKind==="secure"||ADMIN))}
 function renderProjectProducts(projectId){
  const items=projectProducts(projectId);if(!items.length)return '<section class="drawer-products"><h4>Productos derivados</h4><div class="empty">Sin productos registrados.</div></section>';
  const groups=TYPES.map(([id,label])=>[label,items.filter(p=>p.type===id)]).filter(x=>x[1].length);
@@ -105,6 +105,7 @@ function renderProjectProducts(projectId){
 function exportRegistry(){
  const data={schemaVersion:1,generatedAt:new Date().toISOString(),products:localProducts.map(x=>({...x,sessionFile:undefined}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="island-view-products-staging.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)
 }
+window.addEventListener("iv:auth-data",e=>{secureProducts=e.detail?.products||[];refreshCounts()});
 window.IVProductCenter={open:()=>ADMIN?open():null,projectProducts,renderProjectProducts,exportRegistry,refresh:refreshCounts,isAdmin:ADMIN};
 load();
 })();
