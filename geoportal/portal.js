@@ -86,7 +86,7 @@ function renderAttributeTable(kind="projects"){
  qs("#table-draw-count").textContent=sketch.features.length;
  if(kind==="projects"){
   head.innerHTML="<tr><th>Proyecto</th><th>Servicio</th><th>Cliente</th><th>Ubicación</th><th>Fecha</th><th>Acceso</th></tr>";
-  body.innerHTML=state.projects.map(p=>'<tr data-project-row="'+esc(p.id)+'"><td><button class="table-link">'+esc(p.name)+'</button></td><td>'+esc(p.service)+'</td><td>'+esc(p.client)+'</td><td>'+esc(p.location)+'</td><td>'+esc(p.captureDate)+'</td><td>Público</td></tr>').join("")||'<tr><td colspan="6">Sin proyectos.</td></tr>';
+  body.innerHTML=state.projects.map(p=>'<tr data-project-row="'+esc(p.id)+'"><td><button class="table-link">'+esc(p.name)+'</button></td><td>'+esc(p.service)+'</td><td>'+esc(p.client)+'</td><td>'+esc(p.location)+'</td><td>'+esc(p.captureDate)+'</td><td>'+esc(p.access==="private"?"Privado":"Público")+'</td></tr>').join("")||'<tr><td colspan="6">Sin proyectos.</td></tr>';
   qsa("[data-project-row]",body).forEach(r=>r.onclick=()=>showProject(r.dataset.projectRow));
  }else{
   head.innerHTML="<tr><th>#</th><th>Nombre</th><th>Geometría</th><th>Detalle</th></tr>";
@@ -106,7 +106,7 @@ function openView(view,button){
 function openModal(title,subtitle,html){qs("#portal-modal-title").textContent=title;qs("#portal-modal-subtitle").textContent=subtitle||"";qs("#portal-modal-body").innerHTML=html;qs("#portal-modal").classList.remove("hidden")}
 function closeModal(){qs("#portal-modal").classList.add("hidden");qs("#portal-modal-body").innerHTML=""}
 async function loadProjects(){
- try{const r=await fetch("./projects.json",{cache:"no-cache"});if(!r.ok)throw Error("HTTP "+r.status);const data=await r.json();state.publicProjects=(data.projects||[]).filter(p=>p.access==="public");state.projects=[...state.publicProjects];setupFilters();filterProjects();syncProjectMap();if(qs("#table-project-count"))qs("#table-project-count").textContent=state.projects.length;status(state.projects.length+" proyectos públicos cargados")}
+ try{const r=await fetch("./projects.json",{cache:"no-cache"});if(!r.ok)throw Error("HTTP "+r.status);const data=await r.json();state.publicProjects=(data.projects||[]).filter(p=>p.access==="public");const merged=new Map(state.publicProjects.map(p=>[p.id,p]));state.secureProjects.forEach(p=>merged.set(p.id,p));state.projects=[...merged.values()];setupFilters();filterProjects();syncProjectMap();if(qs("#table-project-count"))qs("#table-project-count").textContent=state.projects.length;status(state.projects.length+" proyectos públicos cargados")}
  catch(e){qs("#project-list").innerHTML='<div class="error-state">No fue posible cargar projects.json.</div>';status("Error cargando proyectos","error")}
 }
 function unique(key,arr=state.projects){return [...new Set(arr.flatMap(p=>Array.isArray(p[key])?p[key]:[p[key]]).filter(Boolean))].sort()}
