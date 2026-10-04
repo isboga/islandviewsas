@@ -43,6 +43,7 @@ function setCamera(kind=mode){
  instance.view.camera.position.copy(p);controls.target.copy(currentCenter);instance.view.camera.lookAt(currentCenter);controls.update();instance.notifyChange();
  status(kind==="2d"?"Vista ortográfica superior":"Vista 3D activa");
 }
+window.addEventListener("message",e=>{const d=e.data;if(!d||d.source!=="island-view-product-viewer")return;try{if(d.command==="home"||d.command==="north"){setCamera(mode)}else if(d.command==="zoom-in"||d.command==="zoom-out"){const factor=d.command==="zoom-in"?.72:1.38;instance.view.camera.position.sub(controls.target).multiplyScalar(factor).add(controls.target);controls.update();instance.notifyChange()}}catch(err){console.warn("Product viewer command",err)}});
 function bringMeasurementsToFront(){if(!measureLayer)return;let guard=30;while(map.getIndex(measureLayer)<map.getLayers().length-1&&guard-->0)map.moveLayerUp(measureLayer)}
 function setupMeasurements(){
  const style=new Style({fill:new Fill({color:"rgba(0,122,194,.16)"}),stroke:new Stroke({color:"#007ac2",width:3}),image:new Circle({radius:6,fill:new Fill({color:"#007ac2"}),stroke:new Stroke({color:"#fff",width:2})})});
