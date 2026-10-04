@@ -20,7 +20,9 @@ const params=new URLSearchParams(location.search),projectKey=params.get("project
 const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=CoordinateSystem.epsg3857;
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
 window.__IV_STAGE="instancia Giro3D";
-const instance=new Instance({target:"view",crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});instance.view.camera.up.set(0,0,1);
+const viewTarget=document.getElementById("view");
+if(!(viewTarget instanceof HTMLDivElement))throw new Error("No se encontró el contenedor #view");
+const instance=new Instance({target:viewTarget,crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});instance.view.camera.up.set(0,0,1);
 const map=new GiroMap({extent,backgroundColor:"#d9e1e5"}); await instance.add(map);
 const ambient=new AmbientLight(0xffffff,1.5),sun=new DirectionalLight(0xffffff,2);sun.position.set(1,-1,2).normalize();instance.scene.add(ambient);instance.scene.add(sun);
 window.__IV_STAGE="mapa base";
