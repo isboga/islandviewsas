@@ -13,9 +13,15 @@
  <button data-tool="height" title="Medir altura"><span>↕</span><em>Altura</em></button>
  <i></i><button data-tool="profile" title="Perfil"><span>⌁</span><em>Perfil</em></button>
  <button data-tool="volume" title="Volumen"><span>◇</span><em>Volumen</em></button>
- <i></i><button id="pc-clear" title="Limpiar"><span>⌫</span><em>Limpiar</em></button>
+ <i></i><button id="pc-export" title="Exportar mediciones GeoJSON"><span>⇩</span><em>Exportar GeoJSON</em></button><button id="pc-clear" title="Limpiar"><span>⌫</span><em>Limpiar</em></button>
 </div>
-<div class="pc-display"><label><input id="pc-edl" type="checkbox" checked> EDL</label><label>Presupuesto <select id="pc-budget"><option value="2000000">2 M</option><option value="5000000" selected>5 M</option><option value="10000000">10 M</option></select></label></div>
+<div class="pc-display">
+ <label><input id="pc-edl" type="checkbox" checked> EDL</label>
+ <label>Color <select id="pc-color"><option value="RGB">RGB</option><option value="ELEVATION">Elevación</option><option value="CLASSIFICATION">Clasificación</option><option value="INTENSITY">Intensidad</option></select></label>
+ <label>Tamaño <input id="pc-size" type="range" min=".5" max="5" step=".5" value="1"></label>
+ <label>EDL <input id="pc-edl-strength" type="range" min=".1" max="3" step=".1" value="1"></label>
+ <label>Presupuesto <select id="pc-budget"><option value="2000000">2 M</option><option value="5000000" selected>5 M</option><option value="10000000">10 M</option></select></label>
+ </div>
 <div id="pc-loading" class="pc-loading"><span></span><strong>Cargando nube de puntos…</strong><small>Potree · COPC streaming</small></div><div id="pc-error" class="pc-error hidden"></div>
 <script src="https://hub.dronedb.app/potree/libs/jquery/jquery-3.1.1.min.js"></script><script src="https://hub.dronedb.app/potree/libs/spectrum/spectrum.js"></script><script src="https://hub.dronedb.app/potree/libs/jquery-ui/jquery-ui.min.js"></script><script src="https://hub.dronedb.app/potree/libs/three.js/build/three.min.js"></script><script src="https://hub.dronedb.app/potree/libs/three.js/extra/lines.js"></script><script src="https://hub.dronedb.app/potree/libs/other/BinaryHeap.js"></script><script src="https://hub.dronedb.app/potree/libs/tween/tween.min.js"></script><script src="https://hub.dronedb.app/potree/libs/d3/d3.js"></script><script src="https://hub.dronedb.app/potree/libs/proj4/proj4.js"></script><script src="https://hub.dronedb.app/potree/libs/i18next/i18next.js"></script><script src="https://hub.dronedb.app/potree/libs/jstree/jstree.js"></script><script src="https://hub.dronedb.app/potree/build/potree/potree.js"></script><script src="https://hub.dronedb.app/potree/libs/copc/index.js"></script><script src="https://hub.dronedb.app/potree/libs/plasio/js/laslaz.js"></script>
-<script src="./pointcloud-viewer.js?v=20261004-1240"></script></body></html>
+<script src="./pointcloud-viewer.js?v=20261004-1440"></script></body></html>
