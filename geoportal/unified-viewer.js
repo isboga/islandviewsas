@@ -86,9 +86,10 @@ async function addPotree(p){
 async function ensureProduct(p){
  if(layerRegistry.has(p.id))return layerRegistry.get(p.id);if(entityRegistry.has(p.id))return entityRegistry.get(p.id);
  const s=normalizeSource(p);if(!s.url&&!s.template)throw Error("Producto sin URL de publicación web");
- if(s.kind.includes("copc")||/\\.copc\\.laz(\\?|$)/i.test(s.url))return addCOPC(p);\n if(p.type==="pointcloud"||s.kind.includes("potree"))return addPotree(p);
+ if(s.kind.includes("copc")||String(s.url).toLowerCase().includes(".copc.laz"))return addCOPC(p);
+ if(p.type==="pointcloud"||s.kind.includes("potree"))return addPotree(p);
  if(s.kind.includes("3dtiles")||s.url.endsWith("tileset.json"))return addTiles3D(p);
- if(p.type==="3d"||s.kind.includes("glb")||s.kind.includes("gltf")||/\\.(glb|gltf)(\\?|$)/i.test(s.url))return addGLB(p);
+ if(p.type==="3d"||s.kind.includes("glb")||s.kind.includes("gltf")||String(s.url).toLowerCase().includes(".glb")||String(s.url).toLowerCase().includes(".gltf"))return addGLB(p);
  return addRasterProduct(p);
 }
 async function toggleProduct(p,on){
