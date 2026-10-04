@@ -43,3 +43,6 @@
 .uv-shell.product-mode .uv-map-badge{right:auto;left:16px}
 .uv-shell.product-mode .uv-help{bottom:16px}
 @media(max-width:850px){.uv-shell.product-mode .uv-topbar{grid-template-columns:58px minmax(0,1fr) auto}.uv-shell.product-mode .uv-map-tools{right:10px;top:10px}.uv-shell.product-mode .uv-map-badge{left:10px;top:10px}}
+
+/* Embedded engine: outer Product Viewer owns all application chrome */
+.uv-shell.embedded-mode{display:block;background:#111;height:100%}.uv-shell.embedded-mode .uv-topbar,.uv-shell.embedded-mode .uv-sidebar,.uv-shell.embedded-mode .uv-status{display:none!important}.uv-shell.embedded-mode .uv-view{position:absolute;inset:0;width:100%;height:100%}.uv-shell.embedded-mode .uv-map-tools{top:14px;right:14px;left:auto}.uv-shell.embedded-mode .uv-map-tools button em{left:auto;right:47px}.uv-shell.embedded-mode .uv-map-badge{top:14px;left:14px;right:auto}.uv-shell.embedded-mode .uv-help{bottom:14px}
