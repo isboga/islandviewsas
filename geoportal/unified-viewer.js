@@ -1,4 +1,3 @@
-import OSM from "ol/source/OSM.js";
 import XYZ from "ol/source/XYZ.js";
 import {fromLonLat} from "ol/proj.js";
 import {getLength,getArea} from "ol/sphere.js";
@@ -22,7 +21,7 @@ const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000)
 const instance=new Instance({target:"view",crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});instance.view.camera.up.set(0,0,1);
 const map=new GiroMap({extent,backgroundColor:"#d9e1e5"}); await instance.add(map);
 const ambient=new AmbientLight(0xffffff,1.5),sun=new DirectionalLight(0xffffff,2);sun.position.set(1,-1,2).normalize();instance.scene.add(ambient);instance.scene.add(sun);
-const osm=new ColorLayer({name:"Mapa base · OSM",source:new TiledImageSource({source:new OSM({wrapX:false})})});map.addLayer(osm);
+const basemapSource=new XYZ({url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",projection:"EPSG:3857",wrapX:false,crossOrigin:"anonymous",attributions:"© OpenStreetMap contributors"});\nconst osm=new ColorLayer({name:"Mapa base · OSM",extent,source:new TiledImageSource({source:basemapSource,extent})});await map.addLayer(osm);
 const controls=new MapControls(instance.view.camera,instance.domElement);controls.enableDamping=true;controls.dampingFactor=.18;instance.view.setControls(controls);
 const layerRegistry=new Map(),entityRegistry=new Map(),measurements=[];
 let currentCenter=new Vector3(center[0],center[1],0),drawTool=null,measureSource=null,measureLayer=null,mode="2d";
