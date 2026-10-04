@@ -134,9 +134,9 @@ function showProject(id){
  const p=state.projects.find(x=>x.id===id);if(!p)return;
  const rows=[["Ubicación",p.location],["Captura",p.captureDate],["Servicio",p.service],["Cliente",p.client],["Métodos",(p.methods||[]).join(", ")],["Equipos",(p.equipment||[]).join(", ")||"—"],["Productos",(p.products||[]).join(", ")],["Sistema de coordenadas",p.crs],["Acceso",p.access==="private"?"Privado · cliente":"Público"]];
  qs("#drawer-title").textContent=p.name;
- qs("#drawer-body").innerHTML='<p class="drawer-description">'+esc(p.description)+'</p><dl class="drawer-meta">'+rows.map(r=>'<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>').join("")+'</dl>'+(window.IVProductCenter?window.IVProductCenter.renderProjectProducts(p.id):"")+'<div class="drawer-actions"><button id="project-fly" class="primary">Ubicar en mapa</button>'+(p.model?'<button id="project-model">Abrir modelo 3D</button>':'')+'</div>';
+ qs("#drawer-body").innerHTML='<p class="drawer-description">'+esc(p.description)+'</p><dl class="drawer-meta">'+rows.map(r=>'<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>').join("")+'</dl>'+(window.IVProductCenter?window.IVProductCenter.renderProjectProducts(p.id):"")+'<div class="drawer-actions"><button id="project-fly">Ubicar en mapa</button><button id="project-unified" class="primary">Abrir visor unificado</button>'+(p.model?'<button id="project-model">Modelo 3D</button>':'')+'</div>';
  qs("#project-drawer").classList.remove("hidden");
- qs("#project-fly").onclick=()=>{setWorkspace("viewer");map.flyTo({center:p.coordinates,zoom:16,pitch:25});setTimeout(()=>map.resize(),120)};
+ qs("#project-fly").onclick=()=>{setWorkspace("viewer");map.flyTo({center:p.coordinates,zoom:16,pitch:25});setTimeout(()=>map.resize(),120)};qs("#project-unified").onclick=()=>{location.href="./unified-viewer.html?project="+encodeURIComponent(p.id)};
  if(p.model)qs("#project-model").onclick=()=>showModel(p);
 }
 function syncProjectMap(){
