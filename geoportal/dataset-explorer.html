@@ -10,7 +10,7 @@
 <div class="db-shell">
 <header class="db-header">
  <a class="db-brand" href="./"><span class="db-logo">IV</span><span><strong>ISLAND <b>VIEW</b></strong><small>GEOSPATIAL DATA PLATFORM</small></span></a>
- <div class="db-head-actions"><button title="Proyectos">⌘</button><button title="Descargar">⇩</button><button title="Herramientas">⌕</button><button title="Cuenta">●</button></div>
+ <div class="db-head-actions"><button title="Proyectos">⌘</button><button title="Descargar">⇩</button><button title="Herramientas">⌕</button><button id="db-account" title="Cuenta">●</button></div>
 </header>
 <aside class="db-tree-panel">
  <div class="db-search"><span>⌕</span><input id="db-search" type="search" placeholder="Buscar archivos"></div>
@@ -21,7 +21,7 @@
  <div class="db-toolbar"><div><button title="Agregar">＋</button><button title="Nueva carpeta">▰</button><button title="Seleccionar">☑</button></div><div><button id="db-refresh" title="Actualizar">↻</button><button id="db-view-toggle" title="Cambiar vista">☷</button></div></div>
  <section id="db-files" class="db-grid"><div class="db-loading">Consultando productos geoespaciales…</div></section>
  <section id="db-map-tab" class="db-map-tab hidden">
-   <div id="db-map"></div>
+   <div id="db-map"></div><div id="db-compare-map" class="db-compare-map hidden"></div><div id="db-compare-divider" class="db-compare-divider hidden"></div>
    <div class="db-map-status"><strong>Vista satelital</strong><span id="db-map-count">Preparando ortomosaicos…</span></div>
    <div class="db-gis-tools" aria-label="Herramientas GIS">
     <button data-gis="inspect" title="Consultar coordenadas / valor">⌖</button>
@@ -37,10 +37,11 @@
    <div id="db-analysis" class="db-analysis hidden"><header><strong id="db-analysis-title">Análisis</strong><button id="db-analysis-close">×</button></header><div id="db-analysis-body"></div></div>
    <div class="db-map-actions">
     <button id="db-map-home" title="Ver San Andrés">⌂</button>
-    <button id="db-map-layers-btn" title="Capas">▱</button>
+    <button id="db-map-layers-btn" title="Capas">▱</button><button id="db-map-compare-btn" title="Comparador temporal">◐</button>
     <button id="db-map-full" title="Pantalla completa">⛶</button>
    </div>
    <aside id="db-map-layers" class="db-map-layers hidden"><header><strong>Capas del proyecto</strong><button id="db-map-layers-close">×</button></header><div id="db-map-layer-list"></div></aside>
+   <aside id="db-compare-panel" class="db-compare-panel hidden"><header><strong>Comparador temporal</strong><button id="db-compare-close">×</button></header><label>Izquierda<select id="db-compare-a"></select></label><label>Derecha<select id="db-compare-b"></select></label><label>División<input id="db-compare-range" type="range" min="5" max="95" value="50"></label><button id="db-compare-start">Comparar ortomosaicos</button></aside>
  </section>
  <section id="db-info-tab" class="db-info-tab hidden">
   <div class="db-info-hero"><div><span>DATASET</span><h2 id="db-info-title">Información del proyecto</h2><p id="db-info-description"></p></div><div id="db-info-badges" class="db-info-badges"></div></div>
@@ -53,8 +54,11 @@
  </section>
 </main>
 <div id="db-toast" class="db-toast hidden"></div>
+<div id="db-login" class="db-login hidden"><form id="db-login-form"><header><strong>Acceso Island View</strong><button type="button" id="db-login-close">×</button></header><p>Inicia sesión para guardar y administrar mediciones del proyecto.</p><label>Correo<input id="db-login-email" type="email" required></label><label>Contraseña<input id="db-login-password" type="password" minlength="8" required></label><small id="db-login-error"></small><button type="submit">Ingresar</button></form></div>
 </div>
 <script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
-<script type="module" src="./dataset-explorer.js?v=20261004-1425"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./auth-config.js"></script>
+<script type="module" src="./dataset-explorer.js?v=20261004-1515"></script>
 </body></html>
