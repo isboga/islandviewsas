@@ -5,3 +5,13 @@
 /* Embedded inside the universal DroneDB-style Product Viewer */
 .pc-embedded .pc-head{display:none}.pc-embedded #potree_render_area{top:0!important}.pc-embedded .pc-loading{inset:0}.pc-embedded .pc-toolbar{top:14px;right:14px}.pc-embedded .pc-display{top:14px;left:14px}.pc-embedded .pc-class-btn{top:58px;left:14px}.pc-embedded .pc-class-panel{top:92px;left:14px}.pc-embedded .pc-error{top:14px}
 @media(max-width:750px){.pc-embedded .pc-toolbar{top:8px;right:8px}.pc-embedded .pc-display{top:8px;left:8px}.pc-embedded .pc-class-btn{top:72px;left:8px}.pc-embedded .pc-class-panel{top:106px;left:8px}}
+
+/* Full native Potree workspace */
+#potree_sidebar_container{position:absolute!important;z-index:24;left:0;top:64px;bottom:0;width:300px!important;display:none;background:#202b35;overflow:auto;box-shadow:5px 0 20px #0005}
+body.pc-gui-open #potree_sidebar_container{display:block!important}
+body.pc-gui-open #potree_render_area{left:300px!important}
+.pc-potree-tools{position:absolute;z-index:28;left:12px;bottom:14px;border:1px solid #ffffff2b;background:rgba(25,40,44,.94);color:#fff;border-radius:5px;padding:8px 11px;font-size:9px;font-weight:700;box-shadow:0 5px 18px #0004;backdrop-filter:blur(8px)}
+.pc-potree-tools span{margin-left:5px}.pc-gui-open .pc-potree-tools{left:312px;background:#0877d1}
+.pc-embedded #potree_sidebar_container{top:0}.pc-embedded.pc-gui-open #potree_render_area{left:300px!important}.pc-embedded .pc-potree-tools{bottom:12px}
+#potree_sidebar_container .accordion>h3,#potree_sidebar_container .pv-menu-list{font-size:12px}
+@media(max-width:750px){#potree_sidebar_container{top:58px;width:min(82vw,300px)!important}.pc-embedded #potree_sidebar_container{top:0}body.pc-gui-open #potree_render_area{left:0!important}.pc-embedded.pc-gui-open #potree_render_area{left:0!important}.pc-gui-open .pc-potree-tools{left:auto;right:8px}.pc-potree-tools{left:8px;bottom:8px}}
