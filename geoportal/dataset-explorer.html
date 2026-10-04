@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Island View · Dataset Explorer</title>
+<link rel="stylesheet" href="./dataset-explorer.css">
+</head>
+<body>
+<div class="db-shell">
+<header class="db-header">
+ <a class="db-brand" href="./"><span class="db-logo">IV</span><span><strong>ISLAND <b>VIEW</b></strong><small>GEOSPATIAL DATA PLATFORM</small></span></a>
+ <div class="db-head-actions"><button title="Proyectos">⌘</button><button title="Descargar">⇩</button><button title="Herramientas">⌕</button><button title="Cuenta">●</button></div>
+</header>
+<aside class="db-tree-panel">
+ <div class="db-search"><span>⌕</span><input id="db-search" type="search" placeholder="Buscar archivos"></div>
+ <div id="db-tree" class="db-tree"><div class="db-loading">Cargando dataset…</div></div>
+</aside>
+<main class="db-main">
+ <nav class="db-tabs"><button class="active" data-tab="files"><span>▰</span> Archivos</button><button data-tab="map"><span>◫</span> Mapa</button><button data-tab="tasks"><span>☷</span> Procesos</button></nav>
+ <div class="db-toolbar"><div><button title="Agregar">＋</button><button title="Nueva carpeta">▰</button><button title="Seleccionar">☑</button></div><div><button id="db-refresh" title="Actualizar">↻</button><button id="db-view-toggle" title="Cambiar vista">☷</button></div></div>
+ <section id="db-files" class="db-grid"><div class="db-loading">Consultando productos geoespaciales…</div></section>
+ <section id="db-map-tab" class="db-placeholder hidden"><strong>Mapa del proyecto</strong><p>Abre un TIFF o producto georreferenciado para visualizarlo con las herramientas GIS.</p><a id="db-open-map">Abrir visor cartográfico</a></section>
+ <section id="db-tasks-tab" class="db-placeholder hidden"><strong>Procesamiento</strong><p>Estado de derivados y productos publicados del proyecto.</p></section>
+</main>
+<div id="db-toast" class="db-toast hidden"></div>
+</div>
+<script type="module" src="./dataset-explorer.js?v=20261004-1235"></script>
+</body></html>
