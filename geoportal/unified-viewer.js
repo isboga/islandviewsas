@@ -16,7 +16,8 @@ import VectorSource from "@giro3d/giro3d/sources/VectorSource.js";
 
 const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 window.__IV_STAGE="parámetros";
-const params=new URLSearchParams(location.search),projectKey=params.get("project")||"";
+const params=new URLSearchParams(location.search),projectKey=params.get("project")||"",productKey=params.get("product")||"",productPath=params.get("path")||"",productMode=params.get("mode")==="product"||!!productKey;
+if(productMode)document.querySelector(".uv-shell")?.classList.add("product-mode");
 const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=CoordinateSystem.epsg3857;
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
 window.__IV_STAGE="instancia Giro3D";
@@ -151,7 +152,17 @@ async function loadCatalog(){
   $("#uv-title").textContent=project.name||"Proyecto";$("#uv-subtitle").textContent=[project.client_name,project.location,project.service].filter(Boolean).join(" · ")||"Island View S.A.S.";
   const ll=Array.isArray(project.center)?project.center:project.center?.coordinates;if(ll?.length>=2){const xy=fromLonLat(ll);currentCenter.set(xy[0],xy[1],0)}
  }else{$("#uv-subtitle").textContent=projectKey?"Proyecto no disponible para esta cuenta":"Visor general · San Andrés Isla"}
- renderProducts(products);setCamera("2d");$("#uv-loading").classList.add("hidden");status("Giro3D listo · "+products.length+" productos disponibles"+(project?.dronedb?" · DroneDB SAI":""));
+ renderProducts(products);
+ if(productMode){
+  const selected=products.find(p=>p.id===productKey||p.metadata?.path===productPath);
+  if(selected){
+   $("#uv-title").textContent=selected.name||project?.name||"Producto geoespacial";
+   $("#uv-subtitle").textContent=[selected.format||selected.type,project?.name].filter(Boolean).join(" · ");
+   status("Abriendo · "+(selected.name||"Producto"));
+   try{await toggleProduct(selected,true);const cb=document.querySelector('[data-product="'+CSS.escape(selected.id)+'"]');if(cb)cb.checked=true;if(selected.type==="3d"||selected.type==="pointcloud")setCamera("3d");else setCamera("2d")}catch(e){console.error(e);message("No fue posible abrir "+(selected.name||"el producto")+": "+e.message)}
+  }else{setCamera("2d");message("El producto solicitado no está disponible o continúa en procesamiento.")}
+ }else setCamera("2d");
+ $("#uv-loading").classList.add("hidden");status((productMode?"Visor de producto listo · ":"Giro3D listo · ")+products.length+" productos disponibles"+(project?.dronedb?" · DroneDB SAI":""));
 }
 $("#uv-2d").onclick=()=>setCamera("2d");$("#uv-3d").onclick=()=>setCamera("3d");$("#uv-tilt").oninput=()=>{if(mode==="3d")setCamera("3d")};$("#uv-full").onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();$("#uv-collapse").onclick=()=>{$(".uv-shell").classList.toggle("collapsed");setTimeout(()=>instance.resize?.(),200)};$("#uv-clear").onclick=clearMeasures;$("#uv-edl").onchange=e=>{instance.renderingOptions.enableEDL=e.target.checked;instance.notifyChange()};document.querySelectorAll("[data-draw]").forEach(b=>b.onclick=()=>draw(b.dataset.draw));instance.domElement.addEventListener("contextmenu",e=>e.preventDefault());
 await loadCatalog().catch(e=>{console.error(e);$("#uv-loading").classList.add("hidden");message("El visor inició, pero no fue posible cargar el catálogo del proyecto.");setCamera("2d")});
