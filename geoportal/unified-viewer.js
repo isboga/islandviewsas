@@ -102,6 +102,28 @@ function renderProducts(products){
  box.querySelectorAll("[data-opacity]").forEach(r=>r.oninput=()=>{const o=layerRegistry.get(r.dataset.opacity);if(o){o.opacity=Number(r.value);instance.notifyChange(o)}});
  box.querySelectorAll("[data-focus]").forEach(b=>b.onclick=()=>{const o=entityRegistry.get(b.dataset.focus);if(o?.getBoundingBox){const bb=o.getBoundingBox(),c=bb.getCenter(new Vector3());currentCenter.copy(c);setCamera("3d")}else setCamera(mode)});
 }
+async function discoverDroneDB(cfg){
+ const base=String(cfg.registry||"https://hub.dronedb.app").replace(/\/$/,"")+"/orgs/"+encodeURIComponent(cfg.org)+"/ds/"+encodeURIComponent(cfg.dataset);
+ const found=[],seen=new Set();let visited=0;
+ async function list(path=""){
+  if(visited++>80)return;
+  const form=new FormData();if(path)form.append("path",path);
+  const res=await fetch(base+"/list",{method:"POST",body:form,credentials:"omit"});
+  if(!res.ok)throw Error("DroneDB respondió "+res.status);
+  const rows=await res.json();
+  for(const e of rows||[]){
+   if(!e?.path||String(e.path).startsWith(".ddb"))continue;
+   if((e.type===1||e.type===7)&&!seen.has(e.path)){seen.add(e.path);await list(e.path);continue}
+   const id="ddb-"+String(e.hash||e.path).replace(/[^a-zA-Z0-9_-]/g,"").slice(0,80);
+   if(e.type===4)found.push({id,name:e.name||e.path.split("/").pop(),type:"orthomosaic",format:"DroneDB GeoRaster",source:{kind:"xyz",url:base+"/tiles/{z}/{x}/{y}.png?path="+encodeURIComponent(e.path)},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}});
+   else if(e.type===5&&e.hash)found.push({id,name:e.name||e.path.split("/").pop(),type:"pointcloud",format:"COPC",source:{kind:"copc",url:base+"/build/"+e.hash+"/copc/cloud.copc.laz"},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}});
+   else if((e.type===11||e.type===16)&&e.hash)found.push({id,name:e.name||e.path.split("/").pop(),type:"3d",format:"3D Tiles",source:{kind:"3dtiles",url:base+"/build/"+e.hash+"/3dtiles/tileset.json"},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}});
+  }
+ }
+ await list("");
+ return found;
+}
+
 async function loadCatalog(){
  let project=null,products=[];
  const cfg=window.IV_AUTH_CONFIG||{};
@@ -113,14 +135,16 @@ async function loadCatalog(){
   }
  }
  if(!project&&projectKey){
-  try{const r=await fetch("./projects.json",{cache:"no-cache"}),j=await r.json();const p=(j.projects||[]).find(x=>x.id===projectKey);if(p)project={name:p.name,slug:p.id,location:p.location,center:p.coordinates,service:p.service}}catch(e){console.warn(e)}
+  try{const r=await fetch("./projects.json",{cache:"no-cache"}),j=await r.json();const p=(j.projects||[]).find(x=>x.id===projectKey);if(p)project={name:p.name,slug:p.id,location:p.location,center:p.coordinates,service:p.service,client_name:p.client,dronedb:p.dronedb}}catch(e){console.warn(e)}
  }
  if(projectKey){try{const r=await fetch("./products.json",{cache:"no-cache"}),j=await r.json();const pub=(j.products||[]).filter(x=>x.projectId===projectKey&&x.access!=="private"&&x.status!=="draft");const seen=new Set(products.map(x=>x.id));pub.forEach(x=>{if(!seen.has(x.id))products.push(x)})}catch(e){console.warn(e)}}
+ if(project?.dronedb){try{status("Consultando dataset DroneDB · "+project.dronedb.dataset+"…");const remote=await discoverDroneDB(project.dronedb),seen=new Set(products.map(x=>x.id));remote.forEach(x=>{if(!seen.has(x.id))products.push(x)});project.dronedbCount=remote.length}catch(e){console.error(e);message("No fue posible consultar DroneDB directamente. Verifica que el dataset SAI sea público y permita CORS.");project.dronedbError=e.message}}
+
  if(project){
   $("#uv-title").textContent=project.name||"Proyecto";$("#uv-subtitle").textContent=[project.client_name,project.location,project.service].filter(Boolean).join(" · ")||"Island View S.A.S.";
   const ll=Array.isArray(project.center)?project.center:project.center?.coordinates;if(ll?.length>=2){const xy=fromLonLat(ll);currentCenter.set(xy[0],xy[1],0)}
  }else{$("#uv-subtitle").textContent=projectKey?"Proyecto no disponible para esta cuenta":"Visor general · San Andrés Isla"}
- renderProducts(products);setCamera("2d");$("#uv-loading").classList.add("hidden");status("Giro3D listo · "+products.length+" productos disponibles");
+ renderProducts(products);setCamera("2d");$("#uv-loading").classList.add("hidden");status("Giro3D listo · "+products.length+" productos disponibles"+(project?.dronedb?" · DroneDB SAI":""));
 }
 $("#uv-2d").onclick=()=>setCamera("2d");$("#uv-3d").onclick=()=>setCamera("3d");$("#uv-tilt").oninput=()=>{if(mode==="3d")setCamera("3d")};$("#uv-full").onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();$("#uv-collapse").onclick=()=>{$(".uv-shell").classList.toggle("collapsed");setTimeout(()=>instance.resize?.(),200)};$("#uv-clear").onclick=clearMeasures;$("#uv-edl").onchange=e=>{instance.renderingOptions.enableEDL=e.target.checked;instance.notifyChange()};document.querySelectorAll("[data-draw]").forEach(b=>b.onclick=()=>draw(b.dataset.draw));instance.domElement.addEventListener("contextmenu",e=>e.preventDefault());
 await loadCatalog().catch(e=>{console.error(e);$("#uv-loading").classList.add("hidden");message("El visor inició, pero no fue posible cargar el catálogo del proyecto.");setCamera("2d")});
