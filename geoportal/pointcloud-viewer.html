@@ -1,0 +1,21 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Island View · Point Cloud</title>
+<link rel="stylesheet" href="https://hub.dronedb.app/potree/build/potree/potree.css">
+<link rel="stylesheet" href="https://hub.dronedb.app/potree/libs/jquery-ui/jquery-ui.min.css">
+<link rel="stylesheet" href="https://hub.dronedb.app/potree/libs/spectrum/spectrum.css">
+<link rel="stylesheet" href="https://hub.dronedb.app/potree/libs/jstree/themes/mixed/style.css">
+<link rel="stylesheet" href="./pointcloud-viewer.css"></head><body>
+<header class="pc-head"><a href="javascript:history.back()" class="pc-brand"><span>IV</span><strong>ISLAND <b>VIEW</b></strong></a><div class="pc-title"><strong id="pc-name">Nube de puntos</strong><small>Potree · COPC</small></div><div class="pc-actions"><button id="pc-fit" title="Encuadrar">⌂</button><button id="pc-full" title="Pantalla completa">⛶</button><button onclick="history.back()" title="Volver">←</button></div></header>
+<div id="potree_render_area"></div>
+<div class="pc-toolbar">
+ <button data-tool="point" title="Marcar punto"><span>●</span><em>Punto</em></button>
+ <button data-tool="distance" title="Medir distancia"><span>╱</span><em>Distancia</em></button>
+ <button data-tool="area" title="Medir área"><span>△</span><em>Área</em></button>
+ <button data-tool="height" title="Medir altura"><span>↕</span><em>Altura</em></button>
+ <i></i><button data-tool="profile" title="Perfil"><span>⌁</span><em>Perfil</em></button>
+ <button data-tool="volume" title="Volumen"><span>◇</span><em>Volumen</em></button>
+ <i></i><button id="pc-clear" title="Limpiar"><span>⌫</span><em>Limpiar</em></button>
+</div>
+<div class="pc-display"><label><input id="pc-edl" type="checkbox" checked> EDL</label><label>Presupuesto <select id="pc-budget"><option value="2000000">2 M</option><option value="5000000" selected>5 M</option><option value="10000000">10 M</option></select></label></div>
+<div id="pc-loading" class="pc-loading"><span></span><strong>Cargando nube de puntos…</strong><small>Potree · COPC streaming</small></div><div id="pc-error" class="pc-error hidden"></div>
+<script src="https://hub.dronedb.app/potree/libs/jquery/jquery-3.1.1.min.js"></script><script src="https://hub.dronedb.app/potree/libs/spectrum/spectrum.js"></script><script src="https://hub.dronedb.app/potree/libs/jquery-ui/jquery-ui.min.js"></script><script src="https://hub.dronedb.app/potree/libs/three.js/build/three.min.js"></script><script src="https://hub.dronedb.app/potree/libs/three.js/extra/lines.js"></script><script src="https://hub.dronedb.app/potree/libs/other/BinaryHeap.js"></script><script src="https://hub.dronedb.app/potree/libs/tween/tween.min.js"></script><script src="https://hub.dronedb.app/potree/libs/d3/d3.js"></script><script src="https://hub.dronedb.app/potree/libs/proj4/proj4.js"></script><script src="https://hub.dronedb.app/potree/libs/i18next/i18next.js"></script><script src="https://hub.dronedb.app/potree/libs/jstree/jstree.js"></script><script src="https://hub.dronedb.app/potree/build/potree/potree.js"></script><script src="https://hub.dronedb.app/potree/libs/copc/index.js"></script><script src="https://hub.dronedb.app/potree/libs/plasio/js/laslaz.js"></script>
+<script src="./pointcloud-viewer.js?v=20261004-1240"></script></body></html>
