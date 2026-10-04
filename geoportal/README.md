@@ -127,3 +127,28 @@ El geoportal usa una jerarquía **Proyecto → Productos derivados → Tipo**. E
 El asistente de carga se habilita con `?admin=1`. Este modo no constituye autenticación: en la versión estática actual sirve como espacio de preparación. Los borradores y referencias privadas se guardan en IndexedDB del navegador y nunca se publican automáticamente. Para una administración multiusuario o carga persistente se requiere un backend autenticado.
 
 Los archivos geoespaciales pesados no deben almacenarse directamente en GitHub Pages. Se recomienda conservar originales en DroneDB o almacenamiento de objetos y registrar en el geoportal endpoints web optimizados (WMS/WMTS/XYZ/COG, Potree o GLB según el producto). `products.json` conserva metadatos y referencias públicas autorizadas.
+
+
+## Acceso seguro de usuarios y clientes
+
+La autenticación está preparada para Supabase Auth + PostgreSQL Row Level Security. El esquema reproducible está en `supabase/schema.sql`.
+
+Roles de aplicación:
+- `admin`: administración global de Island View.
+- `editor`: técnico asignado a proyectos con permiso de edición.
+- `client`: cliente asignado a uno o más proyectos.
+- visitante sin sesión: únicamente contenido marcado como público.
+
+Los proyectos y productos privados NO deben añadirse a `projects.json` ni `products.json`. Viven en `portal_projects`, `portal_products` y `project_memberships`, donde RLS filtra las filas antes de entregarlas al navegador.
+
+`auth-config.js` contiene únicamente configuración pública del cliente. Nunca guardar `service_role`, contraseñas de base de datos ni secretos administrativos en el repositorio.
+
+Para activar el acceso:
+1. Crear/conectar el proyecto Supabase.
+2. Ejecutar `supabase/schema.sql`.
+3. Crear el primer usuario Island View y promoverlo a `admin` desde un entorno administrativo.
+4. Configurar Site URL/Redirect URLs para GitHub Pages.
+5. Completar `auth-config.js` con URL y publishable key públicas y establecer `enabled:true`.
+6. Crear clientes y asignarlos mediante `project_memberships`.
+
+El Centro de carga ya no depende de `?admin=1`: aparece únicamente para sesiones con rol `admin` o `editor`.
