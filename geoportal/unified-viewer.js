@@ -17,7 +17,7 @@ import VectorSource from "@giro3d/giro3d/sources/VectorSource.js";
 const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 window.__IV_STAGE="parámetros";
 const params=new URLSearchParams(location.search),projectKey=params.get("project")||"",productKey=params.get("product")||"",productPath=params.get("path")||"",productMode=params.get("mode")==="product"||!!productKey;
-if(productMode)document.querySelector(".uv-shell")?.classList.add("product-mode");
+if(productMode)document.querySelector(".uv-shell")?.classList.add("product-mode");if(params.get("embedded")==="1")document.querySelector(".uv-shell")?.classList.add("embedded-mode");
 if(productMode){const back="./dataset-explorer.html?project="+encodeURIComponent(projectKey);const close=document.querySelector(".uv-close"),brand=document.querySelector(".uv-brand");if(close)close.href=back;if(brand)brand.href=back}
 const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=CoordinateSystem.epsg3857;
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
@@ -28,7 +28,7 @@ const instance=new Instance({target:viewTarget,crs,backgroundColor:0xdce5ea,rend
 const map=new GiroMap({extent,backgroundColor:"#d9e1e5"}); await instance.add(map);
 const ambient=new AmbientLight(0xffffff,1.5),sun=new DirectionalLight(0xffffff,2);sun.position.set(1,-1,2).normalize();instance.scene.add(ambient);instance.scene.add(sun);
 window.__IV_STAGE="mapa base";
-const basemapSource=new XYZ({url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",projection:"EPSG:3857",wrapX:false,crossOrigin:"anonymous",attributions:"© OpenStreetMap contributors"});
+const basemapSource=new XYZ({url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",projection:"EPSG:3857",wrapX:false,crossOrigin:"anonymous",attributions:"Esri World Imagery"});
 const osm=new ColorLayer({name:"Mapa base · OSM",extent,source:new TiledImageSource({source:basemapSource,extent})});await map.addLayer(osm);
 const controls=new MapControls(instance.view.camera,instance.domElement);controls.enableDamping=true;controls.dampingFactor=.18;instance.view.setControls(controls);
 const layerRegistry=new Map(),entityRegistry=new Map(),measurements=[];
