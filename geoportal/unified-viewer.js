@@ -66,6 +66,15 @@ function renderMeasures(){$("#uv-measures").innerHTML=measurements.map((m,i)=>'<
 function clearMeasures(){measureSource?.clear();measurements.length=0;renderMeasures();instance.notifyChange()}
 
 function normalizeSource(p){const s=p.source||{};return {kind:String(s.kind||s.type||p.format||"").toLowerCase(),url:s.url||s.href||"",layer:s.layer||s.layerName||"",projection:s.projection||p.metadata?.crs||"EPSG:3857",template:s.template||s.url||""}}
+async function addElevationProduct(p){
+ const s=normalizeSource(p),url=p.source?.cogUrl||s.url;
+ if(!url)throw Error("DEM/DSM/DTM sin COG publicado");
+ const [{default:ElevationLayer},{default:GeoTIFFSource}]=await Promise.all([import("@giro3d/giro3d/core/layer/ElevationLayer.js"),import("@giro3d/giro3d/sources/GeoTIFFSource.js")]);
+ const source=new GeoTIFFSource({url,crs});
+ const opts={name:p.name||p.id,source,extent,resolutionFactor:.5};
+ const min=Number(p.metadata?.minElevation),max=Number(p.metadata?.maxElevation);if(Number.isFinite(min)&&Number.isFinite(max))opts.minmax={min,max};
+ const layer=new ElevationLayer(opts);await map.addLayer(layer);layerRegistry.set(p.id,layer);mode="3d";setCamera("3d");bringMeasurementsToFront();instance.notifyChange(map);status("Terreno 3D activo · "+(p.name||"DEM/DSM/DTM"));return layer;
+}
 async function addRasterProduct(p){
  const s=normalizeSource(p);let source;
  if(s.kind.includes("wms")){const {default:WmsSource}=await import("@giro3d/giro3d/sources/WmsSource.js");source=new WmsSource({url:s.url,layer:s.layer,projection:s.projection})}
@@ -97,6 +106,7 @@ async function ensureProduct(p){
  if(s.kind.includes("copc")||String(s.url).toLowerCase().includes(".copc.laz"))return addCOPC(p);
  if(p.type==="pointcloud"||s.kind.includes("potree"))return addPotree(p);
  if(s.kind.includes("3dtiles")||s.url.endsWith("tileset.json"))return addTiles3D(p);
+ if(p.type==="elevation"||s.kind.includes("dem")||s.kind.includes("dsm")||s.kind.includes("dtm"))return addElevationProduct(p);
  if(p.type==="3d"||s.kind.includes("glb")||s.kind.includes("gltf")||String(s.url).toLowerCase().includes(".glb")||String(s.url).toLowerCase().includes(".gltf"))return addGLB(p);
  return addRasterProduct(p);
 }
@@ -124,7 +134,7 @@ async function discoverDroneDB(cfg){
    if(!e?.path||String(e.path).startsWith(".ddb"))continue;
    if((e.type===1||e.type===7)&&!seen.has(e.path)){seen.add(e.path);await list(e.path);continue}
    const id="ddb-"+String(e.hash||e.path).replace(/[^a-zA-Z0-9_-]/g,"").slice(0,80);
-   if(e.type===4)found.push({id,name:e.name||e.path.split("/").pop(),type:"orthomosaic",format:"DroneDB GeoRaster",source:{kind:"xyz",url:base+"/tiles/{z}/{x}/{y}.png?path="+encodeURIComponent(e.path)},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}});
+   if(e.type===4){const n=e.name||e.path.split("/").pop(),terrain=/\b(dem|dsm|dtm|elevation|elevacion|elevación)\b/i.test(n+" "+e.path),cog=e.hash?base+"/build/"+e.hash+"/cog/cog.tif":"";found.push({id,name:n,type:terrain?"elevation":"orthomosaic",format:terrain?"DEM/DSM/DTM · COG":"DroneDB GeoRaster",source:terrain?{kind:"dem-cog",url:cog,cogUrl:cog}:{kind:"xyz",url:base+"/tiles/{z}/{x}/{y}.png?path="+encodeURIComponent(e.path),cogUrl:cog},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}})}
    else if(e.type===5&&e.hash)found.push({id,name:e.name||e.path.split("/").pop(),type:"pointcloud",format:"COPC",source:{kind:"copc",url:base+"/build/"+e.hash+"/copc/cloud.copc.laz"},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}});
    else if((e.type===11||e.type===16)&&e.hash)found.push({id,name:e.name||e.path.split("/").pop(),type:"3d",format:"3D Tiles",source:{kind:"3dtiles",url:base+"/build/"+e.hash+"/3dtiles/tileset.json"},metadata:{path:e.path,hash:e.hash,provider:"DroneDB"}});
   }
@@ -147,6 +157,7 @@ async function loadCatalog(){
   try{const r=await fetch("./projects.json",{cache:"no-cache"}),j=await r.json();const p=(j.projects||[]).find(x=>x.id===projectKey);if(p)project={name:p.name,slug:p.id,location:p.location,center:p.coordinates,service:p.service,client_name:p.client,dronedb:p.dronedb}}catch(e){console.warn(e)}
  }
  if(projectKey){try{const r=await fetch("./products.json",{cache:"no-cache"}),j=await r.json();const pub=(j.products||[]).filter(x=>x.projectId===projectKey&&x.access!=="private"&&x.status!=="draft");const seen=new Set(products.map(x=>x.id));pub.forEach(x=>{if(!seen.has(x.id))products.push(x)})}catch(e){console.warn(e)}}
+ if(project&&!project.dronedb&&project.metadata?.org&&project.metadata?.dataset)project.dronedb={registry:project.metadata.registry||"https://hub.dronedb.app",org:project.metadata.org,dataset:project.metadata.dataset};
  if(project?.dronedb){try{status("Consultando dataset DroneDB · "+project.dronedb.dataset+"…");const remote=await discoverDroneDB(project.dronedb),seen=new Set(products.map(x=>x.id));remote.forEach(x=>{if(!seen.has(x.id))products.push(x)});project.dronedbCount=remote.length}catch(e){console.error(e);message("No fue posible consultar DroneDB directamente. Verifica que el dataset SAI sea público y permita CORS.");project.dronedbError=e.message}}
 
  if(project){
