@@ -19,7 +19,7 @@ const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=
 const params=new URLSearchParams(location.search),projectKey=params.get("project")||"";
 const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=CoordinateSystem.epsg3857;
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
-const instance=new Instance({target:"view",crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});
+const instance=new Instance({target:"view",crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});instance.view.camera.up.set(0,0,1);
 const map=new GiroMap({extent,backgroundColor:"#d9e1e5"}); await instance.add(map);
 const ambient=new AmbientLight(0xffffff,1.5),sun=new DirectionalLight(0xffffff,2);sun.position.set(1,-1,2).normalize();instance.scene.add(ambient);instance.scene.add(sun);
 const osm=new ColorLayer({name:"Mapa base · OSM",source:new TiledImageSource({source:new OSM({wrapX:false})})});map.addLayer(osm);
@@ -32,7 +32,7 @@ function message(t){const e=$("#uv-message");e.textContent=t;e.classList.remove(
 function setCamera(kind=mode){
  mode=kind;$("#uv-2d").classList.toggle("active",kind==="2d");$("#uv-3d").classList.toggle("active",kind==="3d");
  const tilt=Number($("#uv-tilt").value||45)*Math.PI/180,dist=kind==="2d"?18000:12000;
- const p=kind==="2d"?new Vector3(currentCenter.x,currentCenter.y,dist):new Vector3(currentCenter.x,currentCenter.y-dist*Math.sin(tilt),dist*Math.cos(tilt));
+ const p=kind==="2d"?new Vector3(currentCenter.x,currentCenter.y-1,dist):new Vector3(currentCenter.x,currentCenter.y-dist*Math.sin(tilt),dist*Math.cos(tilt));
  instance.view.camera.position.copy(p);controls.target.copy(currentCenter);instance.view.camera.lookAt(currentCenter);controls.update();instance.notifyChange();
  status(kind==="2d"?"Vista ortográfica superior":"Vista 3D activa");
 }
