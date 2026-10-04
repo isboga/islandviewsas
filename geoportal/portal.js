@@ -229,6 +229,15 @@ function showModel(p){
  openModal(p.name,"Visor 3D · "+p.model.format+' · '+p.model.sizeMB+' MB','<div class="model-view-wrap"><div id="model-warning" class="demo-banner">'+(p.model.sizeMB>25?"Modelo pesado: puede tardar en móvil.":"Modelo optimizado para demostración web.")+'</div><model-viewer id="iv-model" src="'+esc(p.model.src)+'" camera-controls auto-rotate shadow-intensity="1" ar ar-modes="webxr scene-viewer quick-look" loading="eager" alt="'+esc(p.name)+'"><button slot="ar-button" id="ar-button" class="ar-button hidden">Ver en AR</button></model-viewer><p class="help">AR se muestra solo si model-viewer informa compatibilidad en este dispositivo. En iOS, Quick Look puede requerir USDZ según el flujo del navegador.</p></div>');
  const mv=qs("#iv-model"),ar=qs("#ar-button");mv.addEventListener("load",()=>{if(mv.canActivateAR)ar.classList.remove("hidden")});
 }
+
+function showProductModel(product){
+ const src=product?.source?.url||product?.url;if(!src)return;
+ const name=product.name||"Modelo 3D",fmt=product.format||"GLB";
+ openModal(name,"Producto 3D · "+fmt,'<div class="model-view-wrap"><model-viewer id="iv-product-model" src="'+esc(src)+'" camera-controls auto-rotate shadow-intensity="1" ar ar-modes="webxr scene-viewer quick-look" loading="eager" alt="'+esc(name)+'"><button slot="ar-button" id="ar-button" class="ar-button hidden">Ver en AR</button></model-viewer><p class="help">Producto asociado al proyecto. La opción AR aparece cuando el dispositivo y el formato son compatibles.</p></div>');
+ const mv=qs("#iv-product-model"),ar=qs("#ar-button");mv?.addEventListener("load",()=>{if(mv.canActivateAR)ar?.classList.remove("hidden")});
+}
+window.IVPortal={openModal,closeModal,showProject,showModel,showProductModel,setWorkspace,status,getProjects:()=>[...state.projects]};
+
 map.on("style.load",()=>setTimeout(()=>{loadLayerRegistry();syncProjectMap()},0));
 insertUI();loadProjects();loadLayerRegistry();window.ivRenderResults(sketch.features,sketch.active);
 })();
