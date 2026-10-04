@@ -5,13 +5,29 @@
 <title>Island View · Unified Viewer</title>
 <link rel="stylesheet" href="./unified-viewer.css">
 <script type="importmap">
-{"imports":{
-"three":"https://esm.sh/three@0.180.0",
-"three/":"https://esm.sh/three@0.180.0/",
-"ol/":"https://esm.sh/ol@10.9.0/",
-"proj4":"https://esm.sh/proj4@2.20.9",
-"@giro3d/giro3d/":"https://esm.sh/@giro3d/giro3d@2.0.3/"
-}}
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.180.0",
+    "three/": "https://esm.sh/three@0.180.0/",
+    "ol": "https://esm.sh/ol@10.9.0",
+    "ol/": "https://esm.sh/ol@10.9.0/",
+    "proj4": "https://esm.sh/proj4@2.20.9",
+    "@giro3d/giro3d/core/geographic/CoordinateSystem.js": "https://esm.sh/@giro3d/giro3d@2.0.3/core/geographic/CoordinateSystem.js?external=three,ol,proj4",
+    "@giro3d/giro3d/core/geographic/Extent.js": "https://esm.sh/@giro3d/giro3d@2.0.3/core/geographic/Extent.js?external=three,ol,proj4",
+    "@giro3d/giro3d/core/Instance.js": "https://esm.sh/@giro3d/giro3d@2.0.3/core/Instance.js?external=three,ol,proj4",
+    "@giro3d/giro3d/core/layer/ColorLayer.js": "https://esm.sh/@giro3d/giro3d@2.0.3/core/layer/ColorLayer.js?external=three,ol,proj4",
+    "@giro3d/giro3d/entities/Map.js": "https://esm.sh/@giro3d/giro3d@2.0.3/entities/Map.js?external=three,ol,proj4",
+    "@giro3d/giro3d/interactions/DrawTool.js": "https://esm.sh/@giro3d/giro3d@2.0.3/interactions/DrawTool.js?external=three,ol,proj4",
+    "@giro3d/giro3d/sources/TiledImageSource.js": "https://esm.sh/@giro3d/giro3d@2.0.3/sources/TiledImageSource.js?external=three,ol,proj4",
+    "@giro3d/giro3d/sources/VectorSource.js": "https://esm.sh/@giro3d/giro3d@2.0.3/sources/VectorSource.js?external=three,ol,proj4",
+    "@giro3d/giro3d/sources/WmsSource.js": "https://esm.sh/@giro3d/giro3d@2.0.3/sources/WmsSource.js?external=three,ol,proj4",
+    "@giro3d/giro3d/sources/GeoTIFFSource.js": "https://esm.sh/@giro3d/giro3d@2.0.3/sources/GeoTIFFSource.js?external=three,ol,proj4",
+    "@giro3d/giro3d/entities/Tiles3D.js": "https://esm.sh/@giro3d/giro3d@2.0.3/entities/Tiles3D.js?external=three,ol,proj4",
+    "@giro3d/giro3d/entities/PointCloud.js": "https://esm.sh/@giro3d/giro3d@2.0.3/entities/PointCloud.js?external=three,ol,proj4",
+    "@giro3d/giro3d/sources/COPCSource.js": "https://esm.sh/@giro3d/giro3d@2.0.3/sources/COPCSource.js?external=three,ol,proj4",
+    "@giro3d/giro3d/sources/PotreeSource.js": "https://esm.sh/@giro3d/giro3d@2.0.3/sources/PotreeSource.js?external=three,ol,proj4"
+  }
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./auth-config.js"></script>
@@ -36,5 +52,5 @@
 window.addEventListener("error",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="Error en "+(window.__IV_STAGE||"inicio")+": "+(e.message||"módulo no disponible")}},true);
 window.addEventListener("unhandledrejection",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="No se pudo completar la carga: "+(e.reason&&e.reason.message?e.reason.message:String(e.reason||"error desconocido"))}});
 </script>
-<script type="module" src="./unified-viewer.js?v=20261004-1158"></script>
+<script type="module" src="./unified-viewer.js?v=20261004-1201"></script>
 </body></html>
