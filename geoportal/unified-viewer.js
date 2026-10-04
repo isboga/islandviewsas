@@ -3,7 +3,8 @@ import XYZ from "ol/source/XYZ.js";
 import {fromLonLat} from "ol/proj.js";
 import {getLength,getArea} from "ol/sphere.js";
 import {Circle,Fill,Stroke,Style} from "ol/style.js";
-import {Vector3} from "three";
+import {AmbientLight,Box3,DirectionalLight,Vector3} from "three";
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
 import {MapControls} from "three/examples/jsm/controls/MapControls.js";
 import CoordinateSystem from "@giro3d/giro3d/core/geographic/CoordinateSystem.js";
 import Extent from "@giro3d/giro3d/core/geographic/Extent.js";
@@ -20,6 +21,7 @@ const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=Coor
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
 const instance=new Instance({target:"view",crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});
 const map=new GiroMap({extent,backgroundColor:"#d9e1e5"}); await instance.add(map);
+const ambient=new AmbientLight(0xffffff,1.5),sun=new DirectionalLight(0xffffff,2);sun.position.set(1,-1,2).normalize();instance.scene.add(ambient);instance.scene.add(sun);
 const osm=new ColorLayer({name:"Mapa base · OSM",source:new TiledImageSource({source:new OSM({wrapX:false})})});map.addLayer(osm);
 const controls=new MapControls(instance.view.camera,instance.domElement);controls.enableDamping=true;controls.dampingFactor=.18;instance.view.setControls(controls);
 const layerRegistry=new Map(),entityRegistry=new Map(),measurements=[];
@@ -63,6 +65,12 @@ async function addRasterProduct(p){
  else {source=new TiledImageSource({source:new XYZ({url:s.template,crossOrigin:"anonymous"})})}
  const layer=new ColorLayer({name:p.name||p.id,source,extent});map.addLayer(layer);layerRegistry.set(p.id,layer);bringMeasurementsToFront();instance.notifyChange(map);return layer;
 }
+async function addGLB(p){
+ const s=normalizeSource(p),loader=new GLTFLoader(),gltf=await loader.loadAsync(s.url),model=gltf.scene;
+ const pos=p.source?.position;if(Array.isArray(pos)&&pos.length>=2){const xy=fromLonLat(pos);model.position.set(xy[0],xy[1],Number(pos[2]||0))}else model.position.copy(currentCenter);
+ const scale=Number(p.source?.scale||1);model.scale.setScalar(scale);model.updateMatrixWorld(true);await instance.add(model);entityRegistry.set(p.id,model);
+ const box=new Box3().setFromObject(model),c=box.getCenter(new Vector3());if(Number.isFinite(c.x)){currentCenter.copy(c);setCamera("3d")}instance.notifyChange(model);return model;
+}
 async function addTiles3D(p){
  const s=normalizeSource(p),{default:Tiles3D}=await import("@giro3d/giro3d/entities/Tiles3D.js");const e=new Tiles3D({url:s.url});await instance.add(e);entityRegistry.set(p.id,e);return e;
 }
@@ -74,7 +82,8 @@ async function ensureProduct(p){
  if(layerRegistry.has(p.id))return layerRegistry.get(p.id);if(entityRegistry.has(p.id))return entityRegistry.get(p.id);
  const s=normalizeSource(p);if(!s.url&&!s.template)throw Error("Producto sin URL de publicación web");
  if(p.type==="pointcloud"||s.kind.includes("potree"))return addPotree(p);
- if(p.type==="3d"||s.kind.includes("3dtiles")||s.url.endsWith("tileset.json"))return addTiles3D(p);
+ if(s.kind.includes("3dtiles")||s.url.endsWith("tileset.json"))return addTiles3D(p);
+ if(p.type==="3d"||s.kind.includes("glb")||s.kind.includes("gltf")||/\\.(glb|gltf)(\\?|$)/i.test(s.url))return addGLB(p);
  return addRasterProduct(p);
 }
 async function toggleProduct(p,on){
@@ -101,6 +110,7 @@ async function loadCatalog(){
  if(!project&&projectKey){
   try{const r=await fetch("./projects.json",{cache:"no-cache"}),j=await r.json();const p=(j.projects||[]).find(x=>x.id===projectKey);if(p)project={name:p.name,slug:p.id,location:p.location,center:p.coordinates,service:p.service}}catch(e){console.warn(e)}
  }
+ if(projectKey){try{const r=await fetch("./products.json",{cache:"no-cache"}),j=await r.json();const pub=(j.products||[]).filter(x=>x.projectId===projectKey&&x.access!=="private"&&x.status!=="draft");const seen=new Set(products.map(x=>x.id));pub.forEach(x=>{if(!seen.has(x.id))products.push(x)})}catch(e){console.warn(e)}}
  if(project){
   $("#uv-title").textContent=project.name||"Proyecto";$("#uv-subtitle").textContent=[project.client_name,project.location,project.service].filter(Boolean).join(" · ")||"Island View S.A.S.";
   const ll=Array.isArray(project.center)?project.center:project.center?.coordinates;if(ll?.length>=2){const xy=fromLonLat(ll);currentCenter.set(xy[0],xy[1],0)}
