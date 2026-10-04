@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Island View · Dataset Explorer</title>
-<link rel="stylesheet" href="./dataset-explorer.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css">\n<link rel="stylesheet" href="./dataset-explorer.css">
 </head>
 <body>
 <div class="db-shell">
@@ -19,10 +19,19 @@
  <nav class="db-tabs"><button class="active" data-tab="files"><span>▰</span> Archivos</button><button data-tab="map"><span>◫</span> Mapa</button><button data-tab="tasks"><span>☷</span> Procesos</button></nav>
  <div class="db-toolbar"><div><button title="Agregar">＋</button><button title="Nueva carpeta">▰</button><button title="Seleccionar">☑</button></div><div><button id="db-refresh" title="Actualizar">↻</button><button id="db-view-toggle" title="Cambiar vista">☷</button></div></div>
  <section id="db-files" class="db-grid"><div class="db-loading">Consultando productos geoespaciales…</div></section>
- <section id="db-map-tab" class="db-placeholder hidden"><strong>Mapa del proyecto</strong><p>Abre un TIFF o producto georreferenciado para visualizarlo con las herramientas GIS.</p><a id="db-open-map">Abrir visor cartográfico</a></section>
+ <section id="db-map-tab" class="db-map-tab hidden">
+   <div id="db-map"></div>
+   <div class="db-map-status"><strong>Vista satelital</strong><span id="db-map-count">Preparando ortomosaicos…</span></div>
+   <div class="db-map-actions">
+    <button id="db-map-home" title="Ver San Andrés">⌂</button>
+    <button id="db-map-layers-btn" title="Capas">▱</button>
+    <button id="db-map-full" title="Pantalla completa">⛶</button>
+   </div>
+   <aside id="db-map-layers" class="db-map-layers hidden"><header><strong>Ortomosaicos</strong><button id="db-map-layers-close">×</button></header><div id="db-map-layer-list"></div></aside>
+ </section>
  <section id="db-tasks-tab" class="db-placeholder hidden"><strong>Procesamiento</strong><p>Estado de derivados y productos publicados del proyecto.</p></section>
 </main>
 <div id="db-toast" class="db-toast hidden"></div>
 </div>
-<script type="module" src="./dataset-explorer.js?v=20261004-1235"></script>
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>\n<script type="module" src="./dataset-explorer.js?v=20261004-1302"></script>
 </body></html>
