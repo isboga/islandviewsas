@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Island View · Dataset Explorer</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="./dataset-explorer.css?v=20261004-1725">
+<link rel="stylesheet" href="./dataset-explorer.css?v=20261004-1845">
 </head>
 <body>
 <div class="db-shell">
@@ -38,10 +38,21 @@
    <div id="db-analysis" class="db-analysis hidden"><header><strong id="db-analysis-title">Análisis</strong><button id="db-analysis-close">×</button></header><div id="db-analysis-body"></div></div>
    <div class="db-map-actions">
     <button id="db-map-home" title="Ver San Andrés">⌂</button>
-    <button id="db-map-layers-btn" title="Capas">▱</button><button id="db-map-compare-btn" title="Comparador temporal">◐</button><button id="db-map-annotations-btn" title="Mediciones guardadas">✎</button>
+    <button id="db-map-layers-btn" title="Capas">▱</button><button id="db-map-compare-btn" title="Comparador temporal">◐</button><button id="db-map-annotations-btn" title="Mediciones guardadas">✎</button><button id="db-gis-editor-btn" title="Editor GIS">✥</button>
     <button id="db-map-full" title="Pantalla completa">⛶</button>
    </div>
    <aside id="db-map-layers" class="db-map-layers hidden"><header><strong>Capas del proyecto</strong><button id="db-map-layers-close">×</button></header><div id="db-map-layer-list"></div></aside>
+   <aside id="db-gis-editor" class="db-gis-editor hidden">
+    <header><div><strong>Editor GIS</strong><small>Capas de trabajo del proyecto</small></div><button id="db-gis-editor-close">×</button></header>
+    <div class="db-gis-editor-body">
+      <label>Capa activa<select id="db-work-layer"></select></label>
+      <div class="db-editor-row"><button id="db-new-work-layer">＋ Nueva capa</button><button id="db-delete-work-layer">⌫ Capa</button></div>
+      <div class="db-editor-tools"><button data-edit-draw="gis-point" title="Crear punto">●<small>Punto</small></button><button data-edit-draw="gis-line" title="Crear línea">╱<small>Línea</small></button><button data-edit-draw="gis-polygon" title="Crear polígono">△<small>Polígono</small></button></div>
+      <div class="db-editor-style"><label>Color<input id="db-layer-color" type="color" value="#19a6c4"></label><label>Opacidad<input id="db-layer-opacity" type="range" min=".05" max="1" step=".05" value=".55"></label><button id="db-save-layer-style">Aplicar estilo</button></div>
+      <section id="db-feature-editor" class="hidden"><h4>Entidad seleccionada</h4><label>Nombre<input id="db-feature-name" type="text" placeholder="Nombre"></label><label>Atributos JSON<textarea id="db-feature-props" rows="6" spellcheck="false">{}</textarea></label><small>Arrastra los vértices verdes directamente sobre el mapa para modificar la geometría.</small><div class="db-editor-row"><button id="db-save-feature">Guardar cambios</button><button id="db-delete-feature">Eliminar</button></div></section>
+      <div id="db-work-layer-list"></div>
+    </div>
+   </aside>
    <aside id="db-annotations-panel" class="db-annotations-panel hidden"><header><div><strong>Mediciones guardadas</strong><small>Proyecto SAI</small></div><button id="db-annotations-close">×</button></header><div class="db-ann-actions"><button id="db-export-geojson">GeoJSON</button><button id="db-export-kml">KML</button></div><div id="db-annotations-list"><div class="db-loading">Cargando…</div></div></aside>
    <aside id="db-compare-panel" class="db-compare-panel hidden"><header><strong>Comparador temporal</strong><button id="db-compare-close">×</button></header><label>Izquierda<select id="db-compare-a"></select></label><label>Derecha<select id="db-compare-b"></select></label><label>División<input id="db-compare-range" type="range" min="5" max="95" value="50"></label><button id="db-compare-start">Comparar ortomosaicos</button></aside>
  </section>
@@ -64,5 +75,5 @@
 <script src="https://unpkg.com/shpjs@6.2.0/dist/shp.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./auth-config.js"></script>
-<script type="module" src="./dataset-explorer.js?v=20261004-1725"></script>
+<script type="module" src="./dataset-explorer.js?v=20261004-1845"></script>
 </body></html>
