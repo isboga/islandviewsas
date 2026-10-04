@@ -74,6 +74,11 @@ async function addGLB(p){
 async function addTiles3D(p){
  const s=normalizeSource(p),{default:Tiles3D}=await import("@giro3d/giro3d/entities/Tiles3D.js");const e=new Tiles3D({url:s.url});await instance.add(e);entityRegistry.set(p.id,e);return e;
 }
+async function addCOPC(p){
+ const s=normalizeSource(p);const [{default:PointCloud},{default:COPCSource}]=await Promise.all([import("@giro3d/giro3d/entities/PointCloud.js"),import("@giro3d/giro3d/sources/COPCSource.js")]);
+ const source=new COPCSource({url:s.url});await source.initialize();const e=new PointCloud({source});await instance.add(e);e.pointSize=2;entityRegistry.set(p.id,e);instance.renderingOptions.enableEDL=$("#uv-edl").checked;
+ const box=e.getBoundingBox?.();if(box){const c=box.getCenter(new Vector3());currentCenter.copy(c);setCamera("3d")}return e;
+}
 async function addPotree(p){
  const s=normalizeSource(p);const [{default:PointCloud},{default:PotreeSource}]=await Promise.all([import("@giro3d/giro3d/entities/PointCloud.js"),import("@giro3d/giro3d/sources/PotreeSource.js")]);
  const source=new PotreeSource({url:s.url});await source.initialize();const e=new PointCloud({source});await instance.add(e);e.visible=true;entityRegistry.set(p.id,e);instance.renderingOptions.enableEDL=$("#uv-edl").checked;return e;
@@ -81,7 +86,7 @@ async function addPotree(p){
 async function ensureProduct(p){
  if(layerRegistry.has(p.id))return layerRegistry.get(p.id);if(entityRegistry.has(p.id))return entityRegistry.get(p.id);
  const s=normalizeSource(p);if(!s.url&&!s.template)throw Error("Producto sin URL de publicación web");
- if(p.type==="pointcloud"||s.kind.includes("potree"))return addPotree(p);
+ if(s.kind.includes("copc")||/\\.copc\\.laz(\\?|$)/i.test(s.url))return addCOPC(p);\n if(p.type==="pointcloud"||s.kind.includes("potree"))return addPotree(p);
  if(s.kind.includes("3dtiles")||s.url.endsWith("tileset.json"))return addTiles3D(p);
  if(p.type==="3d"||s.kind.includes("glb")||s.kind.includes("gltf")||/\\.(glb|gltf)(\\?|$)/i.test(s.url))return addGLB(p);
  return addRasterProduct(p);
