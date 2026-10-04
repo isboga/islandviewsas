@@ -13,13 +13,13 @@ const TYPES=[
 const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const localProducts=[];let secureProducts=[];
-const ADMIN=new URLSearchParams(location.search).get("admin")==="1";
+let ADMIN=false,adminReady=false;
 let projects=[],published=[],step=1,draft={};
 function uid(){return "ivp-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7)}
 async function load(){
  try{projects=(await (await fetch("./projects.json",{cache:"no-cache"})).json()).projects||[]}catch(e){}
  try{published=(await (await fetch("./products.json",{cache:"no-cache"})).json()).products||[]}catch(e){}
- if(ADMIN){inject();await loadDrafts();refreshCounts();}
+
 }
 function inject(){
  const actions=$(".appbar-actions");if(!actions||$("#product-upload-open"))return;
@@ -106,6 +106,10 @@ function exportRegistry(){
  const data={schemaVersion:1,generatedAt:new Date().toISOString(),products:localProducts.map(x=>({...x,sessionFile:undefined}))};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="island-view-products-staging.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)
 }
 window.addEventListener("iv:auth-data",e=>{secureProducts=e.detail?.products||[];refreshCounts()});
+window.addEventListener("iv:auth-change",async e=>{
+ const role=e.detail?.profile?.role;ADMIN=role==="admin"||role==="editor";
+ if(ADMIN&&!adminReady){adminReady=true;inject();await loadDrafts();refreshCounts()}
+});
 window.IVProductCenter={open:()=>ADMIN?open():null,projectProducts,renderProjectProducts,exportRegistry,refresh:refreshCounts,isAdmin:ADMIN};
 load();
 })();
