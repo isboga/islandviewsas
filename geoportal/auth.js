@@ -18,8 +18,22 @@ function render(){
  if(!session){body.innerHTML='<form id="login-form" class="auth-form"><div class="auth-intro"><h3>Ingresar al portal</h3><p>Consulta únicamente los proyectos y productos asignados a tu cuenta.</p></div><label>Correo electrónico<input id="login-email" class="field" type="email" autocomplete="username" required></label><label>Contraseña<input id="login-password" class="field" type="password" autocomplete="current-password" required minlength="8"></label><div id="login-error" class="auth-error" role="alert"></div><button class="primary" type="submit">Ingresar</button><button id="forgot-password" type="button" class="auth-link">¿Olvidaste tu contraseña?</button><div class="auth-security">Acceso protegido por sesión autenticada y permisos por proyecto.</div></form>';
   $("#login-form").onsubmit=signIn;$("#forgot-password").onclick=resetPassword;return}
  const role=profile?.role||"client",name=profile?.full_name||session.user.email;
- body.innerHTML='<div class="account-panel"><div class="account-avatar">'+esc((name||"U").slice(0,1).toUpperCase())+'</div><h3>'+esc(name)+'</h3><p>'+esc(session.user.email)+'</p><div class="account-meta"><span>Rol</span><strong>'+esc(roleLabel(role))+'</strong><span>Organización</span><strong>'+esc(profile?.organization||"—")+'</strong></div><button id="account-projects" class="primary">Mis proyectos</button><button id="account-signout">Cerrar sesión</button></div>';
- $("#account-projects").onclick=()=>{close();window.IVPortal?.setWorkspace?.("catalog")};$("#account-signout").onclick=signOut;
+ body.innerHTML='<div class="account-panel"><div class="account-avatar">'+esc((name||"U").slice(0,1).toUpperCase())+'</div><h3>'+esc(name)+'</h3><p>'+esc(session.user.email)+'</p><div class="account-meta"><span>Rol</span><strong>'+esc(roleLabel(role))+'</strong><span>Organización</span><strong>'+esc(profile?.organization||"—")+'</strong></div><button id="account-projects" class="primary">Mis proyectos</button>'+(role==="admin"?'<button id="account-invite">Invitar usuario</button>':'')+'<button id="account-signout">Cerrar sesión</button></div>';
+ $("#account-projects").onclick=()=>{close();window.IVPortal?.setWorkspace?.("catalog")};
+ if(role==="admin")$("#account-invite").onclick=renderInvite;
+ $("#account-signout").onclick=signOut;
+}
+function renderInvite(){
+ const body=$("#auth-body");if(!body)return;
+ body.innerHTML='<form id="invite-form" class="auth-form"><div class="auth-intro"><h3>Invitar usuario</h3><p>Crea acceso para un cliente o técnico. Los clientes no reciben ningún proyecto hasta que Island View se lo asigne.</p></div><label>Nombre completo<input id="invite-name" class="field" required></label><label>Correo electrónico<input id="invite-email" class="field" type="email" required></label><label>Organización / cliente<input id="invite-org" class="field"></label><label>Rol<select id="invite-role" class="field"><option value="client">Cliente</option><option value="editor">Técnico / Editor</option></select></label><div id="invite-error" class="auth-error" role="alert"></div><button class="primary" type="submit">Enviar invitación</button><button id="invite-back" type="button">Volver a mi cuenta</button></form>';
+ $("#invite-form").onsubmit=inviteUser;$("#invite-back").onclick=render;
+}
+async function inviteUser(e){
+ e.preventDefault();const out=$("#invite-error");out.textContent="Enviando invitación…";
+ const {data,error}=await client.functions.invoke("invite-portal-user",{body:{full_name:$("#invite-name").value.trim(),email:$("#invite-email").value.trim(),organization:$("#invite-org").value.trim(),role:$("#invite-role").value}});
+ if(error||data?.error){out.textContent=humanError(data?.error||error?.message);return}
+ out.textContent="Invitación enviada correctamente.";
+ e.target.reset();
 }
 async function signIn(e){
  e.preventDefault();const error=$("#login-error");error.textContent="Verificando…";
