@@ -32,3 +32,14 @@
 .uv-shell.collapsed{grid-template-columns:0 minmax(0,1fr)}.uv-shell.collapsed .uv-sidebar{display:none}.uv-shell.collapsed .uv-topbar{grid-template-columns:62px minmax(0,1fr) auto}.uv-shell.collapsed .uv-brand{padding:0 13px}.uv-shell.collapsed .uv-brand-copy{display:none}
 @media(max-width:850px){.uv-shell{grid-template-columns:min(76vw,304px) minmax(0,1fr)}.uv-topbar{grid-template-columns:58px minmax(0,1fr) auto}.uv-brand{padding:0 11px}.uv-brand-copy,.uv-breadcrumb{display:none}.uv-project{grid-template-columns:1fr;padding:0 10px}.uv-actions{gap:5px;padding-right:7px}.uv-icon-btn{display:none}.uv-view-switch button{min-width:35px}.uv-close{width:34px}.uv-map-tools{left:10px;top:10px}.uv-map-badge{right:10px;top:10px}.uv-help{display:none}}
 @media(max-width:560px){.uv-shell{grid-template-columns:min(84vw,290px) minmax(0,1fr)}.uv-project small{display:none}.uv-status>div:last-child span{display:none}.uv-map-tools button{width:36px;height:36px}}
+
+/* Focused product workspace: DroneDB-style full canvas */
+.uv-shell.product-mode{grid-template-columns:minmax(0,1fr);grid-template-areas:"top" "view" "status"}
+.uv-shell.product-mode .uv-sidebar{display:none}
+.uv-shell.product-mode .uv-topbar{grid-template-columns:220px minmax(0,1fr) auto}
+.uv-shell.product-mode .uv-brand{border-right:1px solid var(--iv-line)}
+.uv-shell.product-mode .uv-map-tools{left:auto;right:16px;top:16px}
+.uv-shell.product-mode .uv-map-tools button em{left:auto;right:47px}
+.uv-shell.product-mode .uv-map-badge{right:auto;left:16px}
+.uv-shell.product-mode .uv-help{bottom:16px}
+@media(max-width:850px){.uv-shell.product-mode .uv-topbar{grid-template-columns:58px minmax(0,1fr) auto}.uv-shell.product-mode .uv-map-tools{right:10px;top:10px}.uv-shell.product-mode .uv-map-badge{left:10px;top:10px}}
