@@ -96,7 +96,7 @@ grant select on public.portal_projects, public.portal_products to anon;
 grant select on public.profiles, public.portal_projects, public.project_memberships, public.portal_products to authenticated;
 grant insert, update, delete on public.portal_projects, public.portal_products to authenticated;
 grant insert, update, delete on public.project_memberships to authenticated;
-grant update on public.profiles to authenticated;
+grant update (full_name, organization) on public.profiles to authenticated;
 
 create policy "public projects visible anonymously" on public.portal_projects for select to anon using (is_public);
 create policy "authenticated projects by membership" on public.portal_projects for select to authenticated using (is_public or private.can_access_project(id));
