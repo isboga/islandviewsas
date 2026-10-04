@@ -15,8 +15,8 @@ function openAccount(){$("#auth-modal")?.classList.remove("hidden");render()}
 function render(){
  const body=$("#auth-body");if(!body)return;
  if(!configured){body.innerHTML='<div class="auth-state"><div class="auth-shield">IV</div><h3>Acceso seguro en configuración</h3><p>La interfaz de usuarios ya está preparada. Falta conectar el proyecto de autenticación de Island View para habilitar sesiones privadas.</p><small>El portal público continúa funcionando normalmente.</small></div>';return}
- if(!session){body.innerHTML='<form id="login-form" class="auth-form"><div class="auth-intro"><h3>Ingresar al portal</h3><p>Consulta únicamente los proyectos y productos asignados a tu cuenta.</p></div><label>Correo electrónico<input id="login-email" class="field" type="email" autocomplete="username" required></label><label>Contraseña<input id="login-password" class="field" type="password" autocomplete="current-password" required minlength="8"></label><div id="login-error" class="auth-error" role="alert"></div><button class="primary" type="submit">Ingresar</button><button id="forgot-password" type="button" class="auth-link">¿Olvidaste tu contraseña?</button><div class="auth-security">Acceso protegido por sesión autenticada y permisos por proyecto.</div></form>';
-  $("#login-form").onsubmit=signIn;$("#forgot-password").onclick=resetPassword;return}
+ if(!session){body.innerHTML='<form id="login-form" class="auth-form"><div class="auth-intro"><h3>Ingresar al portal</h3><p>Consulta únicamente los proyectos y productos asignados a tu cuenta.</p></div><label>Correo electrónico<input id="login-email" class="field" type="email" autocomplete="username" required></label><label>Contraseña<input id="login-password" class="field" type="password" autocomplete="current-password" required minlength="8"></label><div id="login-error" class="auth-error" role="alert"></div><button class="primary" type="submit">Ingresar</button><button id="create-account" type="button">Crear cuenta</button><button id="forgot-password" type="button" class="auth-link">¿Olvidaste tu contraseña?</button><div class="auth-security">Acceso protegido por sesión autenticada y permisos por proyecto.</div></form>';
+  $("#login-form").onsubmit=signIn;$("#forgot-password").onclick=resetPassword;$("#create-account").onclick=createAccount;return}
  const role=profile?.role||"client",name=profile?.full_name||session.user.email;
  body.innerHTML='<div class="account-panel"><div class="account-avatar">'+esc((name||"U").slice(0,1).toUpperCase())+'</div><h3>'+esc(name)+'</h3><p>'+esc(session.user.email)+'</p><div class="account-meta"><span>Rol</span><strong>'+esc(roleLabel(role))+'</strong><span>Organización</span><strong>'+esc(profile?.organization||"—")+'</strong></div><button id="account-projects" class="primary">Mis proyectos</button>'+(role==="admin"?'<button id="account-invite">Invitar usuario</button>':'')+'<button id="account-signout">Cerrar sesión</button></div>';
  $("#account-projects").onclick=()=>{close();window.IVPortal?.setWorkspace?.("catalog")};
@@ -40,6 +40,15 @@ async function signIn(e){
  const email=$("#login-email").value.trim(),password=$("#login-password").value;
  const {error:err}=await client.auth.signInWithPassword({email,password});
  if(err){error.textContent=humanError(err.message);return}error.textContent="";
+}
+async function createAccount(){
+ const email=$("#login-email")?.value.trim(),password=$("#login-password")?.value||"",out=$("#login-error");
+ if(!email){out.textContent="Escribe tu correo.";return}
+ if(password.length<8){out.textContent="Define una contraseña de al menos 8 caracteres.";return}
+ out.textContent="Creando cuenta…";
+ const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});
+ if(error){out.textContent=humanError(error.message);return}
+ out.textContent=data.session?"Cuenta creada correctamente.":"Cuenta creada. Revisa tu correo para confirmar el acceso.";
 }
 async function resetPassword(){
  const email=$("#login-email")?.value.trim();if(!email){$("#login-error").textContent="Escribe primero tu correo.";return}
