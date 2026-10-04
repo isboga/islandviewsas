@@ -2,7 +2,7 @@
 "use strict";
 const cfg=window.IV_AUTH_CONFIG||{}, lib=window.supabase;
 const configured=!!(cfg.enabled&&cfg.supabaseUrl&&cfg.supabasePublishableKey&&lib?.createClient);
-let client=null,session=null,profile=null;
+let client=null,session=null,profile=null,recovery=false;
 const $=(s,p=document)=>p.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function inject(){
  const actions=$(".appbar-actions");if(!actions||$("#iv-account"))return;
@@ -15,6 +15,7 @@ function openAccount(){$("#auth-modal")?.classList.remove("hidden");render()}
 function render(){
  const body=$("#auth-body");if(!body)return;
  if(!configured){body.innerHTML='<div class="auth-state"><div class="auth-shield">IV</div><h3>Acceso seguro en configuración</h3><p>La interfaz de usuarios ya está preparada. Falta conectar el proyecto de autenticación de Island View para habilitar sesiones privadas.</p><small>El portal público continúa funcionando normalmente.</small></div>';return}
+ if(recovery&&session){body.innerHTML='<form id="recovery-form" class="auth-form"><div class="auth-intro"><h3>Nueva contraseña</h3><p>Define una nueva contraseña para tu cuenta.</p></div><label>Nueva contraseña<input id="recovery-password" class="field" type="password" minlength="8" required></label><div id="recovery-error" class="auth-error"></div><button class="primary">Guardar contraseña</button></form>';$("#recovery-form").onsubmit=updatePassword;return}
  if(!session){body.innerHTML='<form id="login-form" class="auth-form"><div class="auth-intro"><h3>Ingresar al portal</h3><p>Consulta únicamente los proyectos y productos asignados a tu cuenta.</p></div><label>Correo electrónico<input id="login-email" class="field" type="email" autocomplete="username" required></label><label>Contraseña<input id="login-password" class="field" type="password" autocomplete="current-password" required minlength="8"></label><div id="login-error" class="auth-error" role="alert"></div><button class="primary" type="submit">Ingresar</button><button id="forgot-password" type="button" class="auth-link">¿Olvidaste tu contraseña?</button><div class="auth-security">Acceso protegido por sesión autenticada y permisos por proyecto.</div></form>';
   $("#login-form").onsubmit=signIn;$("#forgot-password").onclick=resetPassword;return}
  const role=profile?.role||"client",name=profile?.full_name||session.user.email;
@@ -40,6 +41,13 @@ async function signIn(e){
  const email=$("#login-email").value.trim(),password=$("#login-password").value;
  const {error:err}=await client.auth.signInWithPassword({email,password});
  if(err){error.textContent=humanError(err.message);return}error.textContent="";
+}
+async function updatePassword(e){
+ e.preventDefault();const out=$("#recovery-error"),password=$("#recovery-password").value;
+ if(password.length<8){out.textContent="Usa al menos 8 caracteres.";return}
+ out.textContent="Guardando…";const {error}=await client.auth.updateUser({password});
+ if(error){out.textContent=humanError(error.message);return}
+ recovery=false;out.textContent="Contraseña actualizada.";setTimeout(render,600);
 }
 async function resetPassword(){
  const email=$("#login-email")?.value.trim();if(!email){$("#login-error").textContent="Escribe primero tu correo.";return}
@@ -88,7 +96,7 @@ async function loadAuthorizedData(){
 async function init(){
  inject();if(!configured){updateButton();return}
  client=lib.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
- client.auth.onAuthStateChange(()=>setTimeout(refreshUser,0));await refreshUser();
+ client.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){recovery=true;setTimeout(()=>{openAccount();refreshUser()},0);return}setTimeout(refreshUser,0)});await refreshUser();
 }
 window.IVAuth={open:openAccount,close,getClient:()=>client,getSession:()=>session,getProfile:()=>profile,isConfigured:()=>configured,refresh:refreshUser};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
