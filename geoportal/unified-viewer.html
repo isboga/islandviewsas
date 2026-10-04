@@ -33,8 +33,8 @@
 <footer class="uv-status"><span id="uv-status">Inicializando Giro3D…</span><span>EPSG:3857 · Island View S.A.S.</span></footer>
 </div>
 <script>
-window.addEventListener("error",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="Error al iniciar el motor 3D: "+(e.message||"módulo no disponible")}},true);
+window.addEventListener("error",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="Error en "+(window.__IV_STAGE||"inicio")+": "+(e.message||"módulo no disponible")}},true);
 window.addEventListener("unhandledrejection",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="No se pudo completar la carga: "+(e.reason&&e.reason.message?e.reason.message:String(e.reason||"error desconocido"))}});
 </script>
-<script type="module" src="./unified-viewer.js?v=20261004-1157"></script>
+<script type="module" src="./unified-viewer.js?v=20261004-1158"></script>
 </body></html>
