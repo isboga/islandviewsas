@@ -15,12 +15,15 @@ import TiledImageSource from "@giro3d/giro3d/sources/TiledImageSource.js";
 import VectorSource from "@giro3d/giro3d/sources/VectorSource.js";
 
 const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+window.__IV_STAGE="parámetros";
 const params=new URLSearchParams(location.search),projectKey=params.get("project")||"";
 const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=CoordinateSystem.epsg3857;
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
+window.__IV_STAGE="instancia Giro3D";
 const instance=new Instance({target:"view",crs,backgroundColor:0xdce5ea,renderer:{logarithmicDepthBuffer:true}});instance.view.camera.up.set(0,0,1);
 const map=new GiroMap({extent,backgroundColor:"#d9e1e5"}); await instance.add(map);
 const ambient=new AmbientLight(0xffffff,1.5),sun=new DirectionalLight(0xffffff,2);sun.position.set(1,-1,2).normalize();instance.scene.add(ambient);instance.scene.add(sun);
+window.__IV_STAGE="mapa base";
 const basemapSource=new XYZ({url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",projection:"EPSG:3857",wrapX:false,crossOrigin:"anonymous",attributions:"© OpenStreetMap contributors"});
 const osm=new ColorLayer({name:"Mapa base · OSM",extent,source:new TiledImageSource({source:basemapSource,extent})});await map.addLayer(osm);
 const controls=new MapControls(instance.view.camera,instance.domElement);controls.enableDamping=true;controls.dampingFactor=.18;instance.view.setControls(controls);
@@ -42,6 +45,7 @@ function setupMeasurements(){
  measureSource=new VectorSource({dataProjection:CoordinateSystem.epsg3857,style,data:[]});
  measureLayer=new ColorLayer({name:"Mediciones",source:measureSource,extent});map.addLayer(measureLayer);drawTool=new DrawTool({instance});bringMeasurementsToFront();
 }
+window.__IV_STAGE="mediciones";
 setupMeasurements();
 
 async function draw(type){
