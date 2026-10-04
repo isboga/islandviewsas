@@ -18,6 +18,7 @@ const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=
 window.__IV_STAGE="parámetros";
 const params=new URLSearchParams(location.search),projectKey=params.get("project")||"",productKey=params.get("product")||"",productPath=params.get("path")||"",productMode=params.get("mode")==="product"||!!productKey;
 if(productMode)document.querySelector(".uv-shell")?.classList.add("product-mode");
+if(productMode){const back="./dataset-explorer.html?project="+encodeURIComponent(projectKey);const close=document.querySelector(".uv-close"),brand=document.querySelector(".uv-brand");if(close)close.href=back;if(brand)brand.href=back}
 const defaultLonLat=[-81.7006,12.5847],center=fromLonLat(defaultLonLat),crs=CoordinateSystem.epsg3857;
 const extent=Extent.fromCenterAndSize(crs,{x:center[0],y:center[1]},80000,80000);
 window.__IV_STAGE="instancia Giro3D";
