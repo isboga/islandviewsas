@@ -56,7 +56,20 @@ async function loadAuthorizedData(){
  const {data:projects,error:pe}=await client.from("portal_projects").select("*").order("name");
  const {data:products,error:xe}=await client.from("portal_products").select("*").order("created_at",{ascending:false});
  if(pe||xe){console.warn("Island View auth data",pe||xe);return}
- window.dispatchEvent(new CustomEvent("iv:auth-data",{detail:{projects:projects||[],products:products||[],profile,authenticated:!!session}}));
+ const byId=new Map((projects||[]).map(p=>[p.id,p.slug]));
+ const normalizedProjects=(projects||[]).map(p=>({
+  id:p.slug,dbId:p.id,name:p.name,client:p.client_name||"",location:p.location||"",service:p.service||"",
+  description:p.description||"",status:p.status||"active",access:p.is_public?"public":"private",
+  coordinates:Array.isArray(p.center)?p.center:(p.center?.coordinates||[-81.7006,12.5847]),
+  category:p.metadata?.category||"",captureDate:p.metadata?.captureDate||"",
+  methods:p.metadata?.methods||[],equipment:p.metadata?.equipment||[],products:p.metadata?.products||[],
+  crs:p.metadata?.crs||"EPSG:4326",source:"secure"
+ }));
+ const normalizedProducts=(products||[]).map(x=>({
+  id:x.id,projectId:byId.get(x.project_id)||x.project_id,name:x.name,type:x.product_type,format:x.format,
+  access:x.access,status:x.status,source:x.source||{},metadata:x.metadata||{},sourceKind:"secure"
+ }));
+ window.dispatchEvent(new CustomEvent("iv:auth-data",{detail:{projects:normalizedProjects,products:normalizedProducts,profile,authenticated:!!session}}));
 }
 async function init(){
  inject();if(!configured){updateButton();return}
