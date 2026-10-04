@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Island View · Unified Viewer</title>
+<link rel="stylesheet" href="./unified-viewer.css">
+<script type="importmap">
+{"imports":{
+"three":"https://esm.sh/three@0.180.0",
+"three/":"https://esm.sh/three@0.180.0/",
+"ol/":"https://esm.sh/ol@10.9.0/",
+"proj4":"https://esm.sh/proj4@2.20.9",
+"@giro3d/giro3d/":"https://esm.sh/@giro3d/giro3d@2.0.3/"
+}}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./auth-config.js"></script>
+</head>
+<body>
+<div class="uv-shell">
+<header class="uv-topbar">
+ <a class="uv-brand" href="./" aria-label="Volver al geoportal"><span class="uv-mark">IV</span><span><strong>ISLAND VIEW</strong><small>UNIFIED GEOSPATIAL VIEWER</small></span></a>
+ <div class="uv-project"><strong id="uv-title">Visor geoespacial</strong><small id="uv-subtitle">Cargando proyecto…</small></div>
+ <div class="uv-actions"><button id="uv-2d" class="active">2D</button><button id="uv-3d">3D</button><button id="uv-full">⛶</button><a href="./">Cerrar</a></div>
+</header>
+<aside class="uv-sidebar">
+ <div class="uv-side-head"><strong>Contenido</strong><button id="uv-collapse" title="Ocultar panel">‹</button></div>
+ <section><h2>Capas del proyecto</h2><div id="uv-layers" class="uv-layers"><div class="uv-empty">Cargando productos…</div></div></section>
+ <section><h2>Medición y dibujo</h2><div class="uv-tools"><button data-draw="point">Punto</button><button data-draw="line">Distancia</button><button data-draw="polygon">Área</button><button id="uv-clear">Limpiar</button></div><div id="uv-measures" class="uv-measures"></div></section>
+ <section><h2>Escena</h2><label class="uv-range">Inclinación 3D<input id="uv-tilt" type="range" min="0" max="70" value="45"></label><label class="uv-check"><input id="uv-edl" type="checkbox" checked> EDL para nube de puntos</label></section>
+</aside>
+<main id="view" class="uv-view"><div id="uv-loading" class="uv-loading"><span></span><strong>Preparando visor geoespacial…</strong></div><div id="uv-message" class="uv-message hidden"></div></main>
+<footer class="uv-status"><span id="uv-status">Inicializando Giro3D…</span><span>EPSG:3857 · Island View S.A.S.</span></footer>
+</div>
+<script type="module" src="./unified-viewer.js"></script>
+</body></html>
