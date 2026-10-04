@@ -3,7 +3,7 @@
 const IV=window.IVGeo;
 if(!IV){console.error("Island View Geoportal API no disponible");return}
 const {map,sketch,redraw,activateTool,fitFeature,dl,setBasemap,getBasemap,bringSketchToFront}=IV;
-const state={projects:[],filtered:[],imported:{type:"FeatureCollection",features:[]},category:"all"};
+const state={projects:[],publicProjects:[],secureProjects:[],filtered:[],imported:{type:"FeatureCollection",features:[]},category:"all"};
 const qs=(s,p=document)=>p.querySelector(s), qsa=(s,p=document)=>[...p.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function status(msg,type="info"){const el=qs("#portal-status");if(el){el.textContent=msg;el.dataset.type=type}}
@@ -106,7 +106,7 @@ function openView(view,button){
 function openModal(title,subtitle,html){qs("#portal-modal-title").textContent=title;qs("#portal-modal-subtitle").textContent=subtitle||"";qs("#portal-modal-body").innerHTML=html;qs("#portal-modal").classList.remove("hidden")}
 function closeModal(){qs("#portal-modal").classList.add("hidden");qs("#portal-modal-body").innerHTML=""}
 async function loadProjects(){
- try{const r=await fetch("./projects.json",{cache:"no-cache"});if(!r.ok)throw Error("HTTP "+r.status);const data=await r.json();state.projects=(data.projects||[]).filter(p=>p.access==="public");setupFilters();filterProjects();syncProjectMap();if(qs("#table-project-count"))qs("#table-project-count").textContent=state.projects.length;status(state.projects.length+" proyectos públicos cargados")}
+ try{const r=await fetch("./projects.json",{cache:"no-cache"});if(!r.ok)throw Error("HTTP "+r.status);const data=await r.json();state.publicProjects=(data.projects||[]).filter(p=>p.access==="public");state.projects=[...state.publicProjects];setupFilters();filterProjects();syncProjectMap();if(qs("#table-project-count"))qs("#table-project-count").textContent=state.projects.length;status(state.projects.length+" proyectos públicos cargados")}
  catch(e){qs("#project-list").innerHTML='<div class="error-state">No fue posible cargar projects.json.</div>';status("Error cargando proyectos","error")}
 }
 function unique(key,arr=state.projects){return [...new Set(arr.flatMap(p=>Array.isArray(p[key])?p[key]:[p[key]]).filter(Boolean))].sort()}
@@ -127,12 +127,12 @@ function filterProjects(){
 }
 function renderProjects(){
  qs("#project-count").textContent=state.filtered.length;
- qs("#project-list").innerHTML=state.filtered.length?state.filtered.map(p=>'<article class="project-card" data-id="'+esc(p.id)+'"><div><span class="access public">Público</span><strong>'+esc(p.name)+'</strong><small>'+esc(p.service)+' · '+esc(p.location)+'</small></div><button class="project-open" data-id="'+esc(p.id)+'">Ver</button></article>').join(""):'<div class="empty">No hay proyectos con esos filtros.</div>';
+ qs("#project-list").innerHTML=state.filtered.length?state.filtered.map(p=>'<article class="project-card" data-id="'+esc(p.id)+'"><div><span class="access '+(p.access==="private"?"private":"public")+'">'+(p.access==="private"?"Cliente":"Público")+'</span><strong>'+esc(p.name)+'</strong><small>'+esc(p.service)+' · '+esc(p.location)+'</small></div><button class="project-open" data-id="'+esc(p.id)+'">Ver</button></article>').join(""):'<div class="empty">No hay proyectos con esos filtros.</div>';
  qsa(".project-open").forEach(b=>b.onclick=()=>showProject(b.dataset.id));
 }
 function showProject(id){
  const p=state.projects.find(x=>x.id===id);if(!p)return;
- const rows=[["Ubicación",p.location],["Captura",p.captureDate],["Servicio",p.service],["Cliente",p.client],["Métodos",(p.methods||[]).join(", ")],["Equipos",(p.equipment||[]).join(", ")||"—"],["Productos",(p.products||[]).join(", ")],["Sistema de coordenadas",p.crs],["Acceso","Público"]];
+ const rows=[["Ubicación",p.location],["Captura",p.captureDate],["Servicio",p.service],["Cliente",p.client],["Métodos",(p.methods||[]).join(", ")],["Equipos",(p.equipment||[]).join(", ")||"—"],["Productos",(p.products||[]).join(", ")],["Sistema de coordenadas",p.crs],["Acceso",p.access==="private"?"Privado · cliente":"Público"]];
  qs("#drawer-title").textContent=p.name;
  qs("#drawer-body").innerHTML='<p class="drawer-description">'+esc(p.description)+'</p><dl class="drawer-meta">'+rows.map(r=>'<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>').join("")+'</dl>'+(window.IVProductCenter?window.IVProductCenter.renderProjectProducts(p.id):"")+'<div class="drawer-actions"><button id="project-fly" class="primary">Ubicar en mapa</button>'+(p.model?'<button id="project-model">Abrir modelo 3D</button>':'')+'</div>';
  qs("#project-drawer").classList.remove("hidden");
@@ -237,6 +237,19 @@ function showProductModel(product){
  const mv=qs("#iv-product-model"),ar=qs("#ar-button");mv?.addEventListener("load",()=>{if(mv.canActivateAR)ar?.classList.remove("hidden")});
 }
 window.IVPortal={openModal,closeModal,showProject,showModel,showProductModel,setWorkspace,status,getProjects:()=>[...state.projects]};
+
+window.addEventListener("iv:auth-data",e=>{
+ const secure=e.detail?.projects||[];state.secureProjects=secure;
+ const merged=new Map(state.publicProjects.map(p=>[p.id,p]));secure.forEach(p=>merged.set(p.id,p));
+ state.projects=[...merged.values()];setupFilters();filterProjects();syncProjectMap();
+ if(qs("#table-project-count"))qs("#table-project-count").textContent=state.projects.length;
+ status(e.detail?.authenticated?(state.projects.length+" proyectos disponibles para tu cuenta"):(state.projects.length+" proyectos públicos cargados"));
+});
+window.addEventListener("iv:auth-change",e=>{
+ document.body.dataset.auth=e.detail?.session?"authenticated":"public";
+ document.body.dataset.role=e.detail?.profile?.role||"public";
+});
+
 
 map.on("style.load",()=>setTimeout(()=>{loadLayerRegistry();syncProjectMap()},0));
 insertUI();loadProjects();loadLayerRegistry();window.ivRenderResults(sketch.features,sketch.active);
