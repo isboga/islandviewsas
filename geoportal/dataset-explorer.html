@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Island View · Dataset Explorer</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="./dataset-explorer.css?v=20261004-1935">
+<link rel="stylesheet" href="./dataset-explorer.css?v=20261004-2010">
 </head>
 <body>
 <div class="db-shell">
@@ -18,7 +18,7 @@
 </aside>
 <main class="db-main">
  <nav class="db-tabs"><button class="active" data-tab="files"><span>▰</span> Archivos</button><button data-tab="map"><span>◫</span> Mapa</button><button data-tab="info"><span>ⓘ</span> Información</button></nav>
- <div class="db-toolbar"><div><button id="db-import-btn" title="Agregar capa local">＋</button><input id="db-import-file" type="file" accept=".geojson,.json,.kml,.kmz,.zip" multiple hidden><button title="Nueva carpeta">▰</button><button title="Seleccionar">☑</button></div><div><button id="db-refresh" title="Actualizar">↻</button><button id="db-view-toggle" title="Cambiar vista">☷</button></div></div>
+ <div class="db-toolbar"><div><button id="db-import-btn" title="Agregar capa local">＋</button><input id="db-import-file" type="file" accept=".geojson,.json,.kml,.kmz,.zip,.gpkg" multiple hidden><button title="Nueva carpeta">▰</button><button title="Seleccionar">☑</button></div><div><button id="db-refresh" title="Actualizar">↻</button><button id="db-view-toggle" title="Cambiar vista">☷</button></div></div>
  <section id="db-files" class="db-grid"><div class="db-loading">Consultando productos geoespaciales…</div></section>
  <aside id="db-properties" class="db-properties hidden"><header><div><small>PROPIEDADES</small><strong id="db-prop-title">Producto</strong></div><button id="db-prop-close">×</button></header><div id="db-prop-preview"></div><div id="db-prop-body"></div><footer><button id="db-prop-map">Ver en mapa</button><button id="db-prop-open">Abrir producto</button></footer></aside>
  <section id="db-map-tab" class="db-map-tab hidden">
@@ -47,7 +47,7 @@
     <div class="db-gis-editor-body">
       <label>Capa activa<select id="db-work-layer"></select></label>
       <div class="db-editor-row"><button id="db-new-work-layer">＋ Nueva capa</button><button id="db-delete-work-layer">⌫ Capa</button></div>
-      <section class="db-editor-export"><header><strong>Exportar capa activa</strong><small>WGS84 · EPSG:4326</small></header><div><button data-work-export="geojson">GeoJSON</button><button data-work-export="kml">KML</button><button data-work-export="kmz">KMZ</button><button data-work-export="shp">SHP ZIP</button></div><button id="db-export-workspace">⇩ Paquete completo del proyecto</button></section>
+      <section class="db-editor-export"><header><strong>Exportar capa activa</strong><small>WGS84 · EPSG:4326</small></header><div><button data-work-export="geojson">GeoJSON</button><button data-work-export="kml">KML</button><button data-work-export="kmz">KMZ</button><button data-work-export="shp">SHP ZIP</button><button data-work-export="gpkg">GPKG</button></div><div class="db-export-project"><button id="db-export-gpkg-project">GeoPackage proyecto</button><button id="db-export-workspace">⇩ Paquete completo</button></div></section>
       <div class="db-editor-tools"><button data-edit-draw="gis-point" title="Crear punto">●<small>Punto</small></button><button data-edit-draw="gis-line" title="Crear línea">╱<small>Línea</small></button><button data-edit-draw="gis-polygon" title="Crear polígono">△<small>Polígono</small></button></div>
       <div class="db-editor-style"><label>Color<input id="db-layer-color" type="color" value="#19a6c4"></label><label>Opacidad<input id="db-layer-opacity" type="range" min=".05" max="1" step=".05" value=".55"></label><button id="db-save-layer-style">Aplicar estilo</button></div>
       <section id="db-feature-editor" class="hidden"><h4>Entidad seleccionada</h4><label>Nombre<input id="db-feature-name" type="text" placeholder="Nombre"></label><label>Atributos JSON<textarea id="db-feature-props" rows="6" spellcheck="false">{}</textarea></label><small>Arrastra los vértices verdes directamente sobre el mapa para modificar la geometría.</small><div class="db-editor-row"><button id="db-save-feature">Guardar cambios</button><button id="db-delete-feature">Eliminar</button></div></section>
@@ -77,5 +77,5 @@
 <script src="https://unpkg.com/@mapbox/shp-write@0.4.3/shpwrite.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./auth-config.js"></script>
-<script type="module" src="./dataset-explorer.js?v=20261004-1935"></script>
+<script type="module" src="./dataset-explorer.js?v=20261004-2010"></script>
 </body></html>
