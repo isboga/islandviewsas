@@ -3,17 +3,57 @@
   "notice": "Este archivo contiene únicamente metadatos autorizados para publicación pública. Los proyectos privados deben permanecer fuera del despliegue estático.",
   "projects": [
     {
+      "id": "sai-dronedb",
+      "name": "SAI · Dataset DroneDB",
+      "client": "Island View S.A.S.",
+      "location": "San Andrés Isla",
+      "service": "Fotogrametría · GIS · Productos geoespaciales",
+      "description": "Dataset geoespacial SAI publicado por Island View S.A.S. en DroneDB. El visor unificado descubre ortomosaicos, nubes de puntos y modelos derivados directamente desde el dataset.",
+      "status": "Activo",
+      "access": "public",
+      "coordinates": [
+        -81.7006,
+        12.5847
+      ],
+      "tags": [
+        "DroneDB",
+        "Ortomosaico",
+        "Nube de puntos",
+        "3D"
+      ],
+      "dronedb": {
+        "registry": "https://hub.dronedb.app",
+        "org": "islan-view-sas",
+        "dataset": "sai"
+      }
+    },
+    {
       "id": "magic-garden",
       "name": "Magic Garden · Monitoreo ambiental",
       "description": "Proyecto de monitoreo RPAS con productos RGB, térmicos y cartografía de seguimiento.",
       "service": "Monitoreo ambiental",
       "client": "Proyecto público",
       "location": "San Andrés Isla",
-      "coordinates": [-81.721, 12.564],
+      "coordinates": [
+        -81.721,
+        12.564
+      ],
       "captureDate": "2026-09",
-      "methods": ["RPAS", "Fotogrametría", "Termografía"],
-      "equipment": ["DJI Matrice 4E", "D-RTK 3", "RPAS térmico"],
-      "products": ["Ortomosaico", "Termografía", "Nube de puntos"],
+      "methods": [
+        "RPAS",
+        "Fotogrametría",
+        "Termografía"
+      ],
+      "equipment": [
+        "DJI Matrice 4E",
+        "D-RTK 3",
+        "RPAS térmico"
+      ],
+      "products": [
+        "Ortomosaico",
+        "Termografía",
+        "Nube de puntos"
+      ],
       "crs": "WGS 84 / configuración por producto",
       "access": "public",
       "category": "monitoreo",
@@ -26,11 +66,25 @@
       "service": "Fotogrametría",
       "client": "Muestra pública",
       "location": "Cove, San Andrés Isla",
-      "coordinates": [-81.724, 12.536],
+      "coordinates": [
+        -81.724,
+        12.536
+      ],
       "captureDate": "2026",
-      "methods": ["RPAS", "RTK", "Fotogrametría"],
-      "equipment": ["DJI Matrice 4E", "D-RTK 3"],
-      "products": ["Ortomosaico", "Modelo 3D", "Nube de puntos"],
+      "methods": [
+        "RPAS",
+        "RTK",
+        "Fotogrametría"
+      ],
+      "equipment": [
+        "DJI Matrice 4E",
+        "D-RTK 3"
+      ],
+      "products": [
+        "Ortomosaico",
+        "Modelo 3D",
+        "Nube de puntos"
+      ],
       "crs": "WGS 84 / configuración por producto",
       "access": "public",
       "category": "fotogrametria",
@@ -43,11 +97,18 @@
       "service": "Modelos 3D",
       "client": "Demostración",
       "location": "Galería Island View",
-      "coordinates": [-81.7006, 12.5847],
+      "coordinates": [
+        -81.7006,
+        12.5847
+      ],
       "captureDate": "2026",
-      "methods": ["Modelo web GLB"],
+      "methods": [
+        "Modelo web GLB"
+      ],
       "equipment": [],
-      "products": ["GLB"],
+      "products": [
+        "GLB"
+      ],
       "crs": "No aplica al visor demostrativo",
       "access": "public",
       "category": "modelos-3d",
