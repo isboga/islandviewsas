@@ -1,7 +1,7 @@
 (()=>{"use strict";
 const q=new URLSearchParams(location.search),projectKey=q.get("project")||"sai-dronedb",path=q.get("path")||"",hash=q.get("hash")||"",rawType=Number(q.get("type")||0),$=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const TYPES={DIRECTORY:1,GENERIC:2,GEOIMAGE:3,GEORASTER:4,POINTCLOUD:5,IMAGE:6,DRONEDB:7,MARKDOWN:8,VIDEO:9,GEOVIDEO:10,MODEL:11,PANORAMA:12,GEOPANORAMA:13,VECTOR:14,GAUSSIAN_SPLAT:15,TILES3D:16},NAMES={2:"Archivo",3:"Fotografía georreferenciada",4:"GeoTIFF / GeoRaster",5:"Nube de puntos",6:"Fotografía",8:"Documento",9:"Video",10:"Video georreferenciado",11:"Modelo 3D",12:"Panorama",13:"Panorama georreferenciado",14:"Vector GIS",15:"Gaussian Splat",16:"3D Tiles"};
-let project=null,base="",entry={path,hash,type:rawType},siblings=[],map=null,drawMode=null,lastMeasureMode=null,coords=[],vertexMarkers=[],measureLabelMarker=null,drawSourceReady=false,sb=null,portalProjectId=null,potreeReadyTimer=null,areaUnit=localStorage.getItem("iv-area-unit")||"ha",backUrl="./dataset-explorer.html?project="+encodeURIComponent(projectKey);
+let project=null,base="",entry={path,hash,type:rawType},siblings=[],map=null,drawMode=null,lastMeasureMode=null,coords=[],measureLabelMarker=null,drawSourceReady=false,sb=null,portalProjectId=null,potreeReadyTimer=null,areaUnit=localStorage.getItem("iv-area-unit")||"ha",backUrl="./dataset-explorer.html?project="+encodeURIComponent(projectKey);
 function ext(p){return(String(p||"").split(".").pop()||"").toLowerCase()}
 function inferType(e){const x=ext(e.path);if(["las","laz","copc"].includes(x)||/\.copc\.laz$/i.test(String(e.path||"")))return TYPES.POINTCLOUD;if(["tif","tiff"].includes(x))return TYPES.GEORASTER;if(e.type)return e.type;if(["obj","glb","gltf","fbx","ply"].includes(x))return TYPES.MODEL;if(["geojson","json","kml","kmz","gpkg","shp"].includes(x))return TYPES.VECTOR;if(["jpg","jpeg","png","webp"].includes(x))return TYPES.IMAGE;if(["mp4","mov","webm"].includes(x))return TYPES.VIDEO;return TYPES.GENERIC}
 function icon(e){const t=inferType(e);return t===4?"▧":t===5?"◌":[11,15,16].includes(t)?"◇":t===14?"⌑":[3,6,12,13].includes(t)?"◉":[9,10].includes(t)?"▶":"▤"}
@@ -31,11 +31,13 @@ map.addLayer({id:"pv-ann-fill",type:"fill",source:"pv-annotations",filter:["==",
 map.addLayer({id:"pv-ann-line",type:"line",source:"pv-annotations",filter:["==",["geometry-type"],"LineString"],paint:{"line-color":"#ffb020","line-width":4,"line-opacity":.95}});
 map.addLayer({id:"pv-ann-points",type:"circle",source:"pv-annotations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":7,"circle-color":"#ffb020","circle-stroke-color":"#fff","circle-stroke-width":2.5}});
 map.addSource("pv-draw",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+map.addSource("pv-vertices",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
 map.addLayer({id:"pv-draw-fill",type:"fill",source:"pv-draw",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#16d7ef","fill-opacity":.24}});
 map.addLayer({id:"pv-draw-line",type:"line",source:"pv-draw",paint:{"line-color":"#18e0f5","line-width":4}});
-map.addLayer({id:"pv-draw-points",type:"circle",source:"pv-draw",filter:["all",["==",["geometry-type"],"Point"],["==",["get","vertex"],true]],paint:{"circle-radius":8,"circle-color":"#b8ee48","circle-stroke-color":"#fff","circle-stroke-width":3}});map.addLayer({id:"pv-draw-labels",type:"symbol",source:"pv-draw",filter:["has","label"],layout:{"text-field":["get","label"],"text-size":13,"text-font":["Open Sans Semibold","Arial Unicode MS Bold"],"text-offset":[0,-1.15],"text-anchor":"bottom","text-allow-overlap":true},paint:{"text-color":"#ffffff","text-halo-color":"#10272e","text-halo-width":2.5,"text-halo-blur":.5}});
+map.addLayer({id:"pv-draw-points",type:"circle",source:"pv-vertices",paint:{"circle-radius":9,"circle-color":"#b8ee48","circle-stroke-color":"#ffffff","circle-stroke-width":3}});
+map.addLayer({id:"pv-vertex-numbers",type:"symbol",source:"pv-vertices",layout:{"text-field":["to-string",["get","n"]],"text-size":10,"text-font":["Open Sans Semibold","Arial Unicode MS Bold"],"text-allow-overlap":true,"text-ignore-placement":true},paint:{"text-color":"#10252c","text-halo-color":"#b8ee48","text-halo-width":.5}});map.addLayer({id:"pv-draw-labels",type:"symbol",source:"pv-draw",filter:["has","label"],layout:{"text-field":["get","label"],"text-size":13,"text-font":["Open Sans Semibold","Arial Unicode MS Bold"],"text-offset":[0,-1.15],"text-anchor":"bottom","text-allow-overlap":true},paint:{"text-color":"#ffffff","text-halo-color":"#10272e","text-halo-width":2.5,"text-halo-blur":.5}});
 drawSourceReady=true;loadSavedAnnotations().catch(console.warn)}
-function bringOverlaysToFront(){if(!map||!drawSourceReady)return;["pv-ann-fill","pv-ann-line","pv-ann-points","pv-draw-fill","pv-draw-line","pv-draw-points","pv-draw-labels"].forEach(id=>{if(map.getLayer(id))map.moveLayer(id)})}
+function bringOverlaysToFront(){if(!map||!drawSourceReady)return;["pv-ann-fill","pv-ann-line","pv-ann-points","pv-draw-fill","pv-draw-line","pv-draw-points","pv-vertex-numbers","pv-draw-labels"].forEach(id=>{if(map.getLayer(id))map.moveLayer(id)})}
 async function loadSavedAnnotations(){try{const cfg=window.IV_AUTH_CONFIG;if(!cfg?.enabled||!window.supabase)return;sb=sb||window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);const pr=await sb.from("portal_projects").select("id").eq("slug",projectKey).maybeSingle();if(pr.error||!pr.data?.id)return;portalProjectId=pr.data.id;const q=await sb.from("project_annotations").select("id,annotation_type,title,geometry,measurement,style,visibility").eq("project_id",portalProjectId).order("created_at",{ascending:true});if(q.error)throw q.error;const features=(q.data||[]).filter(a=>a.geometry?.type).map(a=>({type:"Feature",id:a.id,geometry:a.geometry,properties:{id:a.id,title:a.title||"",annotation_type:a.annotation_type,visibility:a.visibility,...(a.measurement||{})}}));map.getSource("pv-annotations")?.setData({type:"FeatureCollection",features});bringOverlaysToFront()}catch(e){console.warn("Anotaciones",e)}}
 function fmtDistance(km){return km<1?(km*1000).toFixed(km<.01?2:1)+" m":km.toFixed(3)+" km"}
 function fmtArea(m2){if(areaUnit==="km2")return (m2/1e6).toFixed(6)+" km²";if(areaUnit==="ha")return (m2/10000).toFixed(4)+" ha";return m2.toFixed(2)+" m²"}
@@ -43,23 +45,28 @@ function syncAreaUnitUI(){document.querySelectorAll("[data-area-unit]").forEach(
 function sameCoord(a,b){return !!a&&!!b&&Math.abs(a[0]-b[0])<1e-9&&Math.abs(a[1]-b[1])<1e-9}
 function cleanDoubleClickPoint(){while(coords.length>1&&sameCoord(coords[coords.length-1],coords[coords.length-2]))coords.pop()}
 function clearMeasureMarkers(){
- vertexMarkers.forEach(m=>{try{m.remove()}catch{}});vertexMarkers=[];
  if(measureLabelMarker){try{measureLabelMarker.remove()}catch{}measureLabelMarker=null}
+ if(map?.getSource("pv-vertices"))map.getSource("pv-vertices").setData({type:"FeatureCollection",features:[]});
 }
-function makeMarker(coord,kind,text=""){
+function makeMeasureLabel(coord,kind,text){
  if(!map||!coord)return null;
- const el=document.createElement("div");el.className="iv-map-measure "+kind;el.textContent=text;
+ const el=document.createElement("div");el.className="iv-map-measure iv-measure-label "+kind;el.textContent=text;
  return new maplibregl.Marker({element:el,anchor:"center"}).setLngLat(coord).addTo(map);
 }
-function addVertexMarker(coord,index){const m=makeMarker(coord,"iv-vertex",String(index));if(m)vertexMarkers.push(m)}
 function setMeasureLabel(coord,kind,text){
  if(measureLabelMarker){try{measureLabelMarker.remove()}catch{}measureLabelMarker=null}
- measureLabelMarker=makeMarker(coord,"iv-measure-label "+kind,text);
+ measureLabelMarker=makeMeasureLabel(coord,kind,text);
 }
 function areaLabelPoint(poly){
  let p=turf.centerOfMass(poly);
  try{if(!turf.booleanPointInPolygon(p,poly))p=turf.pointOnFeature(poly)}catch{p=turf.pointOnFeature(poly)}
  return p;
+}
+function updateVertices(){
+ const src=map?.getSource("pv-vertices");if(!src)return;
+ src.setData({type:"FeatureCollection",features:coords.map((c,i)=>turf.point(c,{n:i+1}))});
+ if(map.getLayer("pv-draw-points"))map.moveLayer("pv-draw-points");
+ if(map.getLayer("pv-vertex-numbers"))map.moveLayer("pv-vertex-numbers");
 }
 function updateMeasureLabel(active,mode){
  if(mode==="distance"&&active.length>1){
@@ -89,17 +96,16 @@ function drawFC(preview=null){
   }
  }
  map.getSource("pv-draw")?.setData({type:"FeatureCollection",features:fs});
- updateMeasureLabel(active,mode);
+ updateVertices();updateMeasureLabel(active,mode);
 }
 async function handleMapClick(e){
  if(!drawMode)return;
  if(drawMode==="inspect"){if(entry.type===4)try{const v=await getJSON("/raster-point-value?path="+encodeURIComponent(entry.path)+"&x="+e.lngLat.lng+"&y="+e.lngLat.lat);measure("Valor raster",JSON.stringify(v));}catch(err){measure("Coordenada",e.lngLat.lng.toFixed(7)+", "+e.lngLat.lat.toFixed(7))}else measure("Coordenada",e.lngLat.lng.toFixed(7)+", "+e.lngLat.lat.toFixed(7));return}
- const c=[e.lngLat.lng,e.lngLat.lat];if(!sameCoord(coords[coords.length-1],c)){coords.push(c);addVertexMarker(c,coords.length)}drawFC();
+ const c=[e.lngLat.lng,e.lngLat.lat];if(!sameCoord(coords[coords.length-1],c))coords.push(c);drawFC();
 }
 function measure(title,value){$("#pv-measure").innerHTML="<strong>"+esc(title)+"</strong><div>"+esc(value)+"</div>";$("#pv-measure").classList.remove("hidden")}
 async function finishDraw(){
  cleanDoubleClickPoint();
- while(vertexMarkers.length>coords.length){const m=vertexMarkers.pop();try{m.remove()}catch{}}
  const mode=drawMode;
  if(mode==="distance"&&coords.length>1){const l=turf.length(turf.lineString(coords),{units:"kilometers"});measure("Distancia total",fmtDistance(l))}
  if(mode==="area"&&coords.length>2){const a=turf.area(turf.polygon([[...coords,coords[0]]]));measure("Área total",fmtArea(a))}
