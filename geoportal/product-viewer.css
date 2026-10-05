@@ -16,3 +16,5 @@
 
 /* Always-visible measurement overlays above orthomosaic */
 .iv-map-measure{pointer-events:none;z-index:50;user-select:none}.iv-vertex{width:22px;height:22px;border-radius:50%;background:#b8ee48;border:3px solid #fff;box-shadow:0 0 0 2px #15343d,0 3px 9px #0008;display:grid;place-items:center;color:#10252c;font:800 9px/1 Arial,sans-serif}.iv-vertex span{display:block;transform:translateY(.2px)}.iv-measure-label{min-width:72px;padding:7px 10px;border:2px solid #fff;border-radius:6px;background:#15343df2;color:#fff;box-shadow:0 4px 14px #0008;text-align:center;font:800 12px/1.1 Arial,sans-serif;white-space:nowrap}.iv-distance-label{background:#147fb7f2}.iv-area-label{background:#167f66f2;min-width:84px}
+
+/* Vertices are rendered by the dedicated pv-vertices GeoJSON layer; no vertex count limit. */
