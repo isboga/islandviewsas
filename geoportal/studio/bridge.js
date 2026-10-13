@@ -142,7 +142,7 @@ async function selectProject(id){const p=allProjects().find(x=>x.id===id);if(!p)
  if(db&&sb)jobs.push(Promise.race([loadAuthorized(db.id),new Promise((_,reject)=>setTimeout(()=>reject(Error("Tiempo de espera agotado (12 s)")),12000))]).catch(e=>issues.push("Supabase: "+e.message)));
  await Promise.all(jobs);if(project!==p)return;renderData();
  status(issues.length?"Carga parcial · "+issues.join(" · "):"Proyecto cargado. Selecciona los datos que deseas abrir o exportar.",issues.length>0);
- try{sessionStorage.setItem("iv-last-project",id)}catch{}
+ if(window.IslandViewWorkspace)window.IslandViewWorkspace.setProject(id);else try{sessionStorage.setItem("iv-last-project",id)}catch{}
  const link=$("#iv-explorer-link");link.href="../dataset-explorer.html?project="+encodeURIComponent(id);
  const map=$("#iv-project-map");map.href="../dataset-explorer.html?project="+encodeURIComponent(id)+"&tab=map";
 }
@@ -230,7 +230,7 @@ async function boot(){
   const r=await fetch("../projects.json",{cache:"no-cache"});if(!r.ok)throw Error("No se pudo abrir projects.json");
   const j=await r.json();publicProjects=(j.projects||[]).filter(isPublic);
   await initAuth();await getDbProjects();renderProjects();
-  const wanted=q.get("project")||sessionStorage.getItem("iv-last-project");
+  const wanted=q.get("project")||window.IslandViewWorkspace?.project()||sessionStorage.getItem("iv-last-project");
   await selectProject(allProjects().some(x=>x.id===wanted)?wanted:allProjects()[0]?.id);
   if(databaseIssue)status(databaseIssue+" · Los proyectos públicos siguen disponibles.",true);
  }catch(e){status(e.message,true)}
