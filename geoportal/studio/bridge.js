@@ -4,7 +4,7 @@
 const $=s=>document.querySelector(s);
 const els={projects:$("#iv-projects"),layers:$("#iv-layer-list"),status:$("#iv-studio-status"),account:$("#iv-account"),selected:$("#iv-selected-project"),summary:$("#iv-data-summary"),publicBtn:$("#iv-open-public"),exportBtn:$("#iv-export"),importBtn:$("#iv-import"),file:$("#iv-import-file"),login:$("#iv-login"),email:$("#iv-email"),password:$("#iv-password"),signin:$("#iv-signin"),signout:$("#iv-signout")};
 const allowed=new Set([".geojson",".json",".csv",".tif",".tiff",".asc",".rgis"]);
-const q=new URLSearchParams(location.search);let publicProjects=[],dbProjects=[],project=null,assets=[],layers=[],annotations=[],session=null,sb=null,selected=new Set();
+const q=new URLSearchParams(location.search);let publicProjects=[],dbProjects=[],project=null,assets=[],layers=[],annotations=[],session=null,sb=null,selected=new Set(),databaseIssue="";
 function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function status(message,isError=false){els.status.textContent=message;els.status.classList.toggle("iv-error",isError)}
 function isPublic(p){return p?.access==="public"||p?.is_public===true}
@@ -119,7 +119,15 @@ function renderProjects(){els.projects.replaceChildren();for(const p of allProje
  if(project)els.projects.value=project.id;else if(els.projects.options.length)project=allProjects()[0];
  els.selected.textContent=project?.name||"Sin proyectos"}
 function allProjects(){const map=new Map(publicProjects.map(p=>[p.id,p]));for(const p of dbProjects){const old=map.get(p.slug)||{};map.set(p.slug,{...old,id:p.slug,name:p.name||old.name||p.slug,is_public:p.is_public,center:p.center,dbId:p.id,access:old.access||((p.is_public===true)?"public":"private")})}return [...map.values()]}
-async function getDbProjects(){if(!sb)return;const {data,error}=await sb.from("portal_projects").select("id,slug,name,is_public,center").order("name").limit(100);if(error){status("Proyectos Supabase: "+error.message,true);return}dbProjects=data||[]}
+async function getDbProjects(){if(!sb)return;
+ try{
+  const {data,error}=await Promise.race([
+   sb.from("portal_projects").select("id,slug,name,is_public,center").order("name").limit(100),
+   new Promise((_,reject)=>setTimeout(()=>reject(Error("Sin respuesta de Supabase (8 s)")),8000))
+  ]);
+  if(error)throw error;dbProjects=data||[];databaseIssue="";
+ }catch(e){dbProjects=[];databaseIssue="Supabase no disponible: "+e.message}
+}
 async function initAuth(){const cfg=window.IV_AUTH_CONFIG||{};if(!cfg.enabled||!window.supabase?.createClient){els.account.textContent="Sin conexión de autenticación";return}
  sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  const {data}=await sb.auth.getSession();session=data.session||null;
@@ -224,6 +232,7 @@ async function boot(){
   await initAuth();await getDbProjects();renderProjects();
   const wanted=q.get("project")||sessionStorage.getItem("iv-last-project");
   await selectProject(allProjects().some(x=>x.id===wanted)?wanted:allProjects()[0]?.id);
+  if(databaseIssue)status(databaseIssue+" · Los proyectos públicos siguen disponibles.",true);
  }catch(e){status(e.message,true)}
 }
 boot();
