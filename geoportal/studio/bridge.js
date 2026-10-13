@@ -12,25 +12,37 @@ function cleanName(v){return String(v||"capa").replace(/[^a-zA-Z0-9_\-]/g,"_").s
 function download(name,obj){const b=new Blob([JSON.stringify(obj,null,2)],{type:"application/geo+json"});const url=URL.createObjectURL(b);const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 function feature(geometry,properties){return {type:"Feature",geometry,properties}}
 function hasGeo(g){return !!g&&typeof g==="object"&&typeof g.type==="string"&&g.coordinates!=null}
-function geoFeatures(){const out=[];for(const layer of layers)if(selected.has("layer:"+layer.id)){for(const f of layer.features||[])if(hasGeo(f.geometry))out.push(feature(f.geometry,{...f.properties,iv_name:f.name,iv_layer:layer.name,iv_layer_id:layer.id}))}
+function geoFeatures(){const out=[];
+ if(selected.has("project:location")&&project){
+  const c=Array.isArray(project.coordinates)?project.coordinates:Array.isArray(project.center)?project.center:null;
+  if(c?.length>=2&&c.every(Number.isFinite)&&Math.abs(c[0])<=180&&Math.abs(c[1])<=90){
+   out.push(feature({type:"Point",coordinates:c.slice(0,2)},{iv_name:project.name,iv_type:"project_location",iv_project:project.id,service:project.service||"",description:project.description||"",location:project.location||""}));
+  }
+ }
+ for(const layer of layers)if(selected.has("layer:"+layer.id)){for(const f of layer.features||[])if(hasGeo(f.geometry))out.push(feature(f.geometry,{...f.properties,iv_name:f.name,iv_layer:layer.name,iv_layer_id:layer.id}))}
  if(selected.has("annotations"))for(const a of annotations)if(hasGeo(a.geometry))out.push(feature(a.geometry,{iv_name:a.title,iv_type:a.annotation_type,iv_visibility:a.visibility,...(a.measurement||{})}));
  return out}
 function publicUrls(){return assets.filter(a=>selected.has("asset:"+a.path)).map(a=>a.url)}
 function updateButtons(){const u=publicUrls(),f=geoFeatures();els.publicBtn.disabled=!u.length;els.exportBtn.disabled=!f.length;els.summary.textContent=u.length+" archivos públicos · "+f.length+" geometrías autorizadas seleccionadas"}
 function cardCheck(key,title,meta,checked=false){const label=document.createElement("label");label.className="iv-data-item";const c=document.createElement("input");c.type="checkbox";c.checked=checked;c.addEventListener("change",()=>{c.checked?selected.add(key):selected.delete(key);updateButtons()});const info=document.createElement("span");const name=document.createElement("strong");name.textContent=title;const small=document.createElement("small");small.textContent=meta;info.append(name,small);label.append(c,info);return label}
 function renderData(){els.layers.replaceChildren();if(!project){els.layers.textContent="Selecciona un proyecto.";return}
+ const center=Array.isArray(project.coordinates)?project.coordinates:Array.isArray(project.center)?project.center:null;
+ if(center?.length>=2&&center.every(Number.isFinite)){
+  const heading=document.createElement("h3");heading.textContent="Ficha geoespacial del proyecto";els.layers.append(heading);
+  els.layers.append(cardCheck("project:location","Ubicación del proyecto",project.name+" · punto de referencia"));
+ }
  if(assets.length){const heading=document.createElement("h3");heading.textContent="Archivos DroneDB públicos";els.layers.append(heading);
   for(const a of assets)els.layers.append(cardCheck("asset:"+a.path,a.name,a.path))}
  if(layers.length){const heading=document.createElement("h3");heading.textContent="Capas vectoriales autorizadas";els.layers.append(heading);
   for(const l of layers)els.layers.append(cardCheck("layer:"+l.id,l.name,(l.features||[]).length+" entidades · Supabase RLS"))}
  if(annotations.length){const heading=document.createElement("h3");heading.textContent="Mediciones y anotaciones";els.layers.append(heading);els.layers.append(cardCheck("annotations","Anotaciones del proyecto",annotations.filter(x=>hasGeo(x.geometry)).length+" geometrías"))}
- if(!assets.length&&!layers.length&&!annotations.length){const p=document.createElement("p");p.textContent="Todavía no hay archivos compatibles publicados o capas autorizadas para este proyecto.";els.layers.append(p)}
+ if(!center?.length&&!assets.length&&!layers.length&&!annotations.length){const p=document.createElement("p");p.textContent="Todavía no hay archivos compatibles publicados o capas autorizadas para este proyecto.";els.layers.append(p)}
  updateButtons()}
 function renderProjects(){els.projects.replaceChildren();for(const p of allProjects()){const opt=document.createElement("option");opt.value=p.id;opt.textContent=p.name+(isPublic(p)?" · Público":" · Autorizado");els.projects.append(opt)}
  if(project)els.projects.value=project.id;else if(els.projects.options.length)project=allProjects()[0];
  els.selected.textContent=project?.name||"Sin proyectos"}
-function allProjects(){const map=new Map(publicProjects.map(p=>[p.id,p]));for(const p of dbProjects){const old=map.get(p.slug)||{};map.set(p.slug,{...old,id:p.slug,name:p.name||old.name||p.slug,is_public:p.is_public,dbId:p.id,access:old.access||((p.is_public===true)?"public":"private")})}return [...map.values()]}
-async function getDbProjects(){if(!sb)return;const {data,error}=await sb.from("portal_projects").select("id,slug,name,is_public").order("name").limit(100);if(error){status("Proyectos Supabase: "+error.message,true);return}dbProjects=data||[]}
+function allProjects(){const map=new Map(publicProjects.map(p=>[p.id,p]));for(const p of dbProjects){const old=map.get(p.slug)||{};map.set(p.slug,{...old,id:p.slug,name:p.name||old.name||p.slug,is_public:p.is_public,center:p.center,dbId:p.id,access:old.access||((p.is_public===true)?"public":"private")})}return [...map.values()]}
+async function getDbProjects(){if(!sb)return;const {data,error}=await sb.from("portal_projects").select("id,slug,name,is_public,center").order("name").limit(100);if(error){status("Proyectos Supabase: "+error.message,true);return}dbProjects=data||[]}
 async function initAuth(){const cfg=window.IV_AUTH_CONFIG||{};if(!cfg.enabled||!window.supabase?.createClient){els.account.textContent="Sin conexión de autenticación";return}
  sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  const {data}=await sb.auth.getSession();session=data.session||null;
