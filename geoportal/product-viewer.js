@@ -34,9 +34,9 @@ function initMap(){if(map)return;map=new maplibregl.Map({container:"pv-map",styl
 });$("#pv-map-tools").classList.remove("hidden");$("#pv-engine-label").textContent="GIS"}
 function ensureDraw(){if(drawSourceReady)return;
 map.addSource("pv-annotations",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
-map.addLayer({id:"pv-ann-fill",type:"fill",source:"pv-annotations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#ffb020","fill-opacity":.22}});
-map.addLayer({id:"pv-ann-line",type:"line",source:"pv-annotations",filter:["==",["geometry-type"],"LineString"],paint:{"line-color":"#ffb020","line-width":4,"line-opacity":.95}});
-map.addLayer({id:"pv-ann-points",type:"circle",source:"pv-annotations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":7,"circle-color":"#ffb020","circle-stroke-color":"#fff","circle-stroke-width":2.5}});
+map.addLayer({id:"pv-ann-fill",type:"fill",source:"pv-annotations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":["match",["get","iv_kind"],"work","#18a9c6","#ffb020"],"fill-opacity":.22}});
+map.addLayer({id:"pv-ann-line",type:"line",source:"pv-annotations",filter:["any",["==",["geometry-type"],"LineString"],["==",["geometry-type"],"Polygon"]],paint:{"line-color":["match",["get","iv_kind"],"work","#18a9c6","#ffb020"],"line-width":4,"line-opacity":.95}});
+map.addLayer({id:"pv-ann-points",type:"circle",source:"pv-annotations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":7,"circle-color":["match",["get","iv_kind"],"work","#18a9c6","#ffb020"],"circle-stroke-color":"#fff","circle-stroke-width":2.5}});
 map.addSource("pv-draw",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
 map.addSource("pv-vertices",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
 map.addLayer({id:"pv-draw-fill",type:"fill",source:"pv-draw",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#f6b71e","fill-opacity":.12}});
@@ -46,7 +46,35 @@ map.addLayer({id:"pv-draw-points",type:"circle",source:"pv-vertices",paint:{"cir
 map.addLayer({id:"pv-vertex-numbers",type:"symbol",source:"pv-vertices",layout:{"text-field":["to-string",["get","n"]],"text-size":10,"text-font":["Open Sans Semibold","Arial Unicode MS Bold"],"text-allow-overlap":true,"text-ignore-placement":true},paint:{"text-color":"#10252c","text-halo-color":"#b8ee48","text-halo-width":.5}});map.addLayer({id:"pv-draw-labels",type:"symbol",source:"pv-draw",filter:["has","label"],layout:{"text-field":["get","label"],"text-size":13,"text-font":["Open Sans Semibold","Arial Unicode MS Bold"],"text-offset":[0,-1.15],"text-anchor":"bottom","text-allow-overlap":true},paint:{"text-color":"#ffffff","text-halo-color":"#10272e","text-halo-width":2.5,"text-halo-blur":.5}});
 drawSourceReady=true;loadSavedAnnotations().catch(console.warn)}
 function bringOverlaysToFront(){if(!map||!drawSourceReady)return;["pv-ann-fill","pv-ann-line","pv-ann-points","pv-draw-fill","pv-draw-outline","pv-draw-line","pv-draw-points","pv-vertex-numbers","pv-draw-labels"].forEach(id=>{if(map.getLayer(id))map.moveLayer(id)})}
-async function loadSavedAnnotations(){try{const cfg=window.IV_AUTH_CONFIG;if(!cfg?.enabled||!window.supabase)return;sb=sb||window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);const pr=await sb.from("portal_projects").select("id").eq("slug",projectKey).maybeSingle();if(pr.error||!pr.data?.id)return;portalProjectId=pr.data.id;const q=await sb.from("project_annotations").select("id,annotation_type,title,geometry,measurement,style,visibility").eq("project_id",portalProjectId).order("created_at",{ascending:true});if(q.error)throw q.error;const features=(q.data||[]).filter(a=>a.geometry?.type).map(a=>({type:"Feature",id:a.id,geometry:a.geometry,properties:{id:a.id,title:a.title||"",annotation_type:a.annotation_type,visibility:a.visibility,...(a.measurement||{})}}));map.getSource("pv-annotations")?.setData({type:"FeatureCollection",features});bringOverlaysToFront()}catch(e){console.warn("Anotaciones",e)}}
+let projectOverlaysVisible=true;
+async function loadSavedAnnotations(){
+ try{
+  const cfg=window.IV_AUTH_CONFIG;if(!cfg?.enabled||!window.supabase)return;
+  sb=sb||window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);
+  const pr=await sb.from("portal_projects").select("id").eq("slug",projectKey).maybeSingle();
+  if(pr.error||!pr.data?.id)return;portalProjectId=pr.data.id;
+  const [ann,ls,fs]=await Promise.all([
+   sb.from("project_annotations").select("id,annotation_type,title,geometry,measurement,visibility").eq("project_id",portalProjectId).limit(2000),
+   sb.from("project_layers").select("id,name").eq("project_id",portalProjectId).limit(200),
+   sb.from("project_features").select("id,layer_id,name,geometry,properties").eq("project_id",portalProjectId).limit(5000)
+  ]);
+  if(ann.error)console.warn("Anotaciones",ann.error);
+  if(ls.error)console.warn("Capas",ls.error);
+  if(fs.error)console.warn("Entidades",fs.error);
+  const features=(ann.data||[]).filter(a=>a.geometry?.type).map(a=>({type:"Feature",geometry:a.geometry,properties:{id:a.id,title:a.title||"",iv_kind:"annotation",annotation_type:a.annotation_type,visibility:a.visibility,...(a.measurement||{})}}));
+  const names=new Map((ls.data||[]).map(l=>[l.id,l.name]));
+  for(const f of fs.data||[])if(f.geometry?.type)features.push({type:"Feature",geometry:f.geometry,properties:{id:f.id,title:f.name||"",iv_kind:"work",layer:names.get(f.layer_id)||"Capa GIS",...(f.properties||{})}});
+  map.getSource("pv-annotations")?.setData({type:"FeatureCollection",features});
+  bringOverlaysToFront();status(features.length+" geometrías del proyecto disponibles");
+ }catch(e){console.warn("Capas del proyecto",e)}
+}
+window.addEventListener("iv:toggle-project-layers",()=>{
+ if(!map||!drawSourceReady){status("Abre primero un ortomosaico georreferenciado");return}
+ projectOverlaysVisible=!projectOverlaysVisible;
+ for(const id of["pv-ann-fill","pv-ann-line","pv-ann-points"])if(map.getLayer(id))map.setLayoutProperty(id,"visibility",projectOverlaysVisible?"visible":"none");
+ status(projectOverlaysVisible?"Capas y anotaciones visibles":"Capas y anotaciones ocultas");
+});
+
 function fmtDistance(km){return km<1?(km*1000).toFixed(km<.01?2:1)+" m":km.toFixed(3)+" km"}
 function fmtArea(m2){if(areaUnit==="km2")return (m2/1e6).toFixed(6)+" km²";if(areaUnit==="ha")return (m2/10000).toFixed(4)+" ha";return m2.toFixed(2)+" m²"}
 function syncAreaUnitUI(){document.querySelectorAll("[data-area-unit]").forEach(b=>b.classList.toggle("active",b.dataset.areaUnit===areaUnit));$("#pv-area-units").classList.toggle("hidden",(drawMode||lastMeasureMode)!=="area")}
