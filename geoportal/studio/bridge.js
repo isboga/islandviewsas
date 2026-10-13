@@ -37,7 +37,84 @@ function renderData(){els.layers.replaceChildren();if(!project){els.layers.textC
   for(const l of layers)els.layers.append(cardCheck("layer:"+l.id,l.name,(l.features||[]).length+" entidades · Supabase RLS"))}
  if(annotations.length){const heading=document.createElement("h3");heading.textContent="Mediciones y anotaciones";els.layers.append(heading);els.layers.append(cardCheck("annotations","Anotaciones del proyecto",annotations.filter(x=>hasGeo(x.geometry)).length+" geometrías"))}
  if(!center?.length&&!assets.length&&!layers.length&&!annotations.length){const p=document.createElement("p");p.textContent="Todavía no hay archivos compatibles publicados o capas autorizadas para este proyecto.";els.layers.append(p)}
- updateButtons()}
+ updateButtons();renderManager()}
+
+function renderManager(){
+ const list=$("#iv-manage-list");if(!list)return;
+ const query=$("#iv-layer-search")?.value?.trim().toLocaleLowerCase("es")||"";
+ list.replaceChildren();
+ const matching=layers.filter(l=>(l.name+" "+l.geometry_type).toLocaleLowerCase("es").includes(query));
+ if(!matching.length){const empty=document.createElement("p");empty.textContent=layers.length?"No se encontraron capas con ese filtro.":"Este proyecto no tiene capas GIS autorizadas todavía.";list.append(empty);return}
+ for(const layer of matching){
+  const section=document.createElement("section");section.className="iv-managed-layer";
+  const top=document.createElement("div");top.className="iv-managed-top";
+  const info=document.createElement("div");const name=document.createElement("strong");name.textContent=layer.name;
+  const details=document.createElement("small");details.textContent=(layer.features||[]).length+" entidades · "+(layer.geometry_type||"vector")+" · "+(layer.visibility==="public"?"Acceso público":"Acceso del proyecto");
+  info.append(name,details);top.append(info);
+  const exportButton=document.createElement("button");exportButton.type="button";exportButton.textContent="GeoJSON ↓";exportButton.addEventListener("click",()=>{
+   const feats=(layer.features||[]).filter(f=>validGeometry(f.geometry)).map(f=>feature(f.geometry,{...(f.properties||{}),iv_name:f.name,iv_layer:layer.name}));
+   if(!feats.length)return status("La capa no tiene geometrías válidas para exportar.",true);
+   download("island-view-"+cleanName(project.id)+"-"+cleanName(layer.name)+".geojson",{type:"FeatureCollection",features:feats});
+   status("Capa exportada: "+layer.name+" ("+feats.length+" entidades).");
+  });top.append(exportButton);section.append(top);
+  const controls=document.createElement("div");controls.className="iv-managed-controls";
+  const colorLabel=document.createElement("label");colorLabel.textContent="Color";
+  const color=document.createElement("input");color.type="color";color.value=/^#[0-9a-f]{6}$/i.test(layer.style?.color||"")?layer.style.color:"#19a6c4";colorLabel.append(color);
+  const opacityLabel=document.createElement("label");opacityLabel.textContent="Opacidad";
+  const opacity=document.createElement("input");opacity.type="range";opacity.min="0.05";opacity.max="1";opacity.step=".05";opacity.value=Math.max(.05,Math.min(1,Number(layer.style?.opacity??.55)));opacityLabel.append(opacity);
+  const save=document.createElement("button");save.type="button";save.textContent="Guardar estilo";save.addEventListener("click",async()=>{
+   if(!sb||!session||!project?.dbId)return status("Necesitas una sesión editora para guardar estilos.",true);
+   save.disabled=true;
+   try{
+    const style={...(layer.style||{}),color:color.value,opacity:Number(opacity.value)};
+    const {data,error}=await sb.from("project_layers").update({style,updated_at:new Date().toISOString()}).eq("id",layer.id).eq("project_id",project.dbId).select("id,style").maybeSingle();
+    if(error)throw error;if(!data)throw Error("No se modificó la capa. Verifica permisos de editor.");
+    layer.style=data.style;status("Estilo guardado en "+layer.name+". Actualiza los otros visores para ver el cambio.");
+   }catch(e){status("No se pudo guardar el estilo: "+e.message,true)}
+   finally{save.disabled=false}
+  });
+  const rename=document.createElement("button");rename.type="button";rename.textContent="Renombrar";rename.addEventListener("click",async()=>{
+   if(!sb||!session||!project?.dbId)return status("Necesitas una sesión editora para renombrar capas.",true);
+   const next=prompt("Nuevo nombre de la capa:",layer.name)?.trim();if(!next||next===layer.name)return;
+   if(next.length>120)return status("El nombre no puede superar 120 caracteres.",true);
+   rename.disabled=true;
+   try{
+    const {data,error}=await sb.from("project_layers").update({name:next,updated_at:new Date().toISOString()}).eq("id",layer.id).eq("project_id",project.dbId).select("id,name").maybeSingle();
+    if(error)throw error;if(!data)throw Error("Sin permiso para cambiar el nombre.");
+    layer.name=data.name;renderData();renderManager();status("Capa renombrada correctamente.");
+   }catch(e){status("No se pudo renombrar: "+e.message,true)}
+   finally{rename.disabled=false}
+  });
+  controls.append(colorLabel,opacityLabel,save,rename);section.append(controls);list.append(section);
+ }
+}
+async function testConnections(){
+ const button=$("#iv-test-connectivity"),box=$("#iv-health-results");button.disabled=true;box.replaceChildren();
+ const add=(name,ok,detail)=>{const line=document.createElement("div");line.className="iv-health-line "+(ok?"ok":"fail");const label=document.createElement("strong");label.textContent=(ok?"✓ ":"! ")+name;const info=document.createElement("span");info.textContent=detail;line.append(label,info);box.append(line)};
+ try{
+  const r=await fetch("../projects.json",{cache:"no-store"});add("Catálogo Island View",r.ok,r.ok?"Archivo de proyectos disponible":"HTTP "+r.status);
+ }catch(e){add("Catálogo Island View",false,e.message)}
+ if(!sb)add("Supabase",false,"Cliente de autenticación no disponible");
+ else{
+  try{
+   const {error}=await Promise.race([
+    sb.from("portal_projects").select("id",{head:true,count:"exact"}).limit(1),
+    new Promise((_,reject)=>setTimeout(()=>reject(Error("Tiempo de espera agotado (8 s)")),8000))
+   ]);
+   add("Supabase",!error,error?"No se pudo consultar: "+error.message:"Consulta permitida por las políticas RLS");
+  }catch(e){add("Supabase",false,e.message)}
+ }
+ if(project?.dronedb&&isPublic(project)){
+  try{
+   const d=project.dronedb,base=new URL(d.registry||"https://hub.dronedb.app");
+   const u=base.origin+"/orgs/"+encodeURIComponent(d.org)+"/ds/"+encodeURIComponent(d.dataset)+"/list";
+   const r=await fetch(u,{method:"POST",body:new FormData(),credentials:"omit",signal:AbortSignal.timeout(8000)});
+   add("DroneDB público",r.ok,r.ok?"Catálogo accesible desde este navegador":"HTTP "+r.status);
+  }catch(e){add("DroneDB público",false,e.message)}
+ }else add("DroneDB público",true,"Sin dataset público seleccionado para probar");
+ add("RustGIS Web",true,"Enlace configurado; la carga real de archivos debe probarse en RustGIS");
+ button.disabled=false;
+}
 function renderProjects(){els.projects.replaceChildren();for(const p of allProjects()){const opt=document.createElement("option");opt.value=p.id;opt.textContent=p.name+(isPublic(p)?" · Público":" · Autorizado");els.projects.append(opt)}
  if(project)els.projects.value=project.id;else if(els.projects.options.length)project=allProjects()[0];
  els.selected.textContent=project?.name||"Sin proyectos"}
@@ -79,7 +156,7 @@ async function loadDroneDB(p){
 }
 async function loadAuthorized(projectId){
  const [{data:ls,error:le},{data:fs,error:fe},{data:ann,error:ae}]=await Promise.all([
-  sb.from("project_layers").select("id,name,visibility").eq("project_id",projectId).limit(200),
+  sb.from("project_layers").select("id,name,visibility,geometry_type,style").eq("project_id",projectId).limit(200),
   sb.from("project_features").select("id,layer_id,name,geometry,properties").eq("project_id",projectId).limit(5000),
   sb.from("project_annotations").select("id,title,annotation_type,geometry,measurement,visibility").eq("project_id",projectId).limit(2000)
  ]);
@@ -127,6 +204,9 @@ async function importResults(file){
 }
 async function boot(){
  els.projects.addEventListener("change",e=>selectProject(e.target.value));
+ $("#iv-layer-search").addEventListener("input",renderManager);
+ $("#iv-refresh-layers").addEventListener("click",async()=>{if(!project?.dbId)return status("Este proyecto no tiene catálogo GIS Supabase.",true);await loadAuthorized(project.dbId);renderData();status("Capas actualizadas desde Supabase.")});
+ $("#iv-test-connectivity").addEventListener("click",testConnections);
  els.publicBtn.addEventListener("click",openRustGIS);
  els.exportBtn.addEventListener("click",exportPrivate);
  els.importBtn.addEventListener("click",()=>els.file.click());
