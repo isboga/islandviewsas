@@ -12,7 +12,7 @@ explorer:[
 ["Edición y archivos",[["Editor GIS","✎","#db-gis-editor-btn","map"],["Mediciones guardadas","◎","#db-map-annotations-btn","map"],["Comparador temporal","◧","#db-map-compare-btn","map"],["Importar capa","＋","#db-import-btn"],["Editor / exportar capa","⇩","#db-gis-editor-btn","map"]]]
 ],
 product:[
-["Navegación",[["Archivos","▤","#pv-files-open"],["Información y atributos","ⓘ","#pv-info-btn"],["Encuadrar","⌂","#pv-home"],["Pantalla completa","⛶","#pv-full"]]],
+["Navegación",[["Mostrar / ocultar capas GIS","▧","iv:toggle-project-layers"],["Archivos","▤","#pv-files-open"],["Información y atributos","ⓘ","#pv-info-btn"],["Encuadrar","⌂","#pv-home"],["Pantalla completa","⛶","#pv-full"]]],
 ["Mediciones",[["Punto / consultar","⌖",'[data-tool="inspect"]'],["Distancia","↔",'[data-tool="distance"]'],["Área / polígono","⬡",'[data-tool="area"]'],["Análisis ráster","▥",'[data-tool="stats"]'],["Limpiar mediciones","⌫",'[data-tool="clear"]']]],
 ["GIS Studio",[["Abrir RustGIS · proyecto","✣","iv:studio"]]],
 ["Productos",[["Exportar medición","⇩","iv:export-measure"],["Descargar archivo","↓","#pv-download"],["Abrir fuente original","↗","#pv-open-source"]]]
@@ -44,6 +44,7 @@ for(const [group,items] of catalog[kind]){
   const glyph=document.createElement("span");glyph.className="iv-workspace-glyph";glyph.textContent=icon;
   const name=document.createElement("span");name.textContent=label;b.append(glyph,name);
   b.addEventListener("click",()=>{
+   if(selector==="iv:toggle-project-layers"){window.dispatchEvent(new Event("iv:toggle-project-layers"));dismiss();return}
    if(selector==="iv:export-measure"){window.dispatchEvent(new Event("iv:export-measure"));dismiss();return}
    if(selector==="iv:studio"){
     const params=new URLSearchParams(location.search);
