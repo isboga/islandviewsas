@@ -1,0 +1,29 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#153b53"><title>GIS Studio Beta · Island View</title>
+<link rel="stylesheet" href="../shared/theme.css?v=20261013-1">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:var(--iv-bg);color:var(--iv-ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px clamp(16px,5vw,70px);background:#fff;border-bottom:1px solid var(--iv-border)}
+.brand{display:flex;gap:12px;align-items:center;color:var(--iv-deep);text-decoration:none;font-size:19px;font-weight:850;letter-spacing:-.03em}.brand-icon{width:40px;height:40px;border-radius:10px;background:var(--iv-deep);color:#fff;display:grid;place-items:center;font-size:17px}
+.iv-studio-actions{display:flex;align-items:center;gap:10px}.back{color:var(--iv-brand);font-size:13px;font-weight:750;text-decoration:none}
+main{max-width:1100px;margin:0 auto;padding:clamp(25px,5vw,64px) 20px 70px}
+.eyebrow{font-size:12px;letter-spacing:.16em;color:var(--iv-brand);font-weight:850;text-transform:uppercase}
+h1{font-size:clamp(34px,5vw,54px);line-height:1.1;letter-spacing:-.05em;margin:14px 0}p{font-size:16px;line-height:1.65;color:var(--iv-muted);max-width:740px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:32px}.tile{border:1px solid var(--iv-border);background:#fff;border-radius:14px;padding:24px;min-height:170px}
+.tile h2{font-size:16px;margin:10px 0}.tile p{font-size:13px;line-height:1.5;margin:0}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border-radius:10px;padding:0 20px;text-decoration:none;font-size:14px;font-weight:750;background:var(--iv-brand);color:#fff}.btn.secondary{background:#fff;color:var(--iv-deep);border:1px solid var(--iv-border)}
+.note{border-left:4px solid var(--iv-measure);background:#fff9e9;padding:16px 18px;border-radius:0 9px 9px 0;margin-top:34px;font-size:13px;line-height:1.6}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.back{display:none}}
+</style></head><body>
+<header><a class="brand" href="../index.html"><span class="brand-icon">IV</span><span>ISLAND <span style="color:var(--iv-brand)">VIEW</span><small style="display:block;font-size:9px;letter-spacing:.15em;color:var(--iv-muted)">GEOSPATIAL PLATFORM</small></span></a><div class="iv-studio-actions"><a class="back" href="../index.html">← Geoportal</a></div></header>
+<main><div class="eyebrow">Herramientas profesionales · Acceso beta</div><h1>GIS Studio</h1>
+<p>Espacio de trabajo avanzado de Island View para edición de geometrías, atributos y análisis espacial. En esta fase evaluamos <strong>RustGIS Web</strong> sin reemplazar nuestros visores MapLibre, DroneDB, Potree ni Giro3D.</p>
+<div class="grid">
+<section class="tile"><div aria-hidden="true">⬡</div><h2>Edición vectorial</h2><p>Probar digitalización, edición de polígonos y atributos con datos públicos de demostración.</p></section>
+<section class="tile"><div aria-hidden="true">◫</div><h2>Geoprocesamiento</h2><p>Evaluar operaciones GIS disponibles en la edición web y exportaciones compatibles.</p></section>
+<section class="tile"><div aria-hidden="true">▧</div><h2>Integración futura</h2><p>Conectar proyectos y capas autorizadas tras validar APIs, seguridad y rendimiento.</p></section>
+</div>
+<div class="actions"><a class="btn" href="https://web.rustgis.app/" target="_blank" rel="noopener noreferrer">Abrir RustGIS Web ↗</a><a class="btn secondary" href="../dataset-explorer.html" id="iv-explorer-link">Volver al explorador</a></div>
+<div class="note"><strong>Importante:</strong> RustGIS abre por ahora en un sitio externo. No comparte automáticamente la sesión de Island View, no carga tus proyectos privados y todavía no guarda ediciones en Supabase. Utiliza únicamente datos públicos o autorizados para pruebas.</div>
+</main><script>const p=new URLSearchParams(location.search).get("project");if(p&&/^[\w-]{1,100}$/.test(p))document.getElementById("iv-explorer-link").href="../dataset-explorer.html?project="+encodeURIComponent(p);</script>
+<script src="../shared/navigation.js?v=20261013-1" defer></script></body></html>
