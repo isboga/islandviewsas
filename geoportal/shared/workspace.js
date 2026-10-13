@@ -40,9 +40,9 @@ for(const [group,items] of catalog[kind]){
   const glyph=document.createElement("span");glyph.className="iv-workspace-glyph";glyph.textContent=icon;
   const name=document.createElement("span");name.textContent=label;b.append(glyph,name);
   b.addEventListener("click",()=>{
-   const target=document.querySelector(selector);
-   if(!target&&selector!=="iv:export-measure"){announce("La herramienta aún no está disponible.");return}
    if(selector==="iv:export-measure"){window.dispatchEvent(new Event("iv:export-measure"));dismiss();return}
+   const target=document.querySelector(selector);
+   if(!target){announce("La herramienta aún no está disponible.");return}
    if(kind==="explorer"&&needMap&&document.querySelector('[data-tab="map"]:not(.active)'))document.querySelector('[data-tab="map"]')?.click();
    if(selector==="#uv-collapse"){
     const side=document.querySelector(".uv-sidebar");
