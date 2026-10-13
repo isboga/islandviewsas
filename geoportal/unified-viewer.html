@@ -34,7 +34,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./auth-config.js"></script>
-<link rel="stylesheet" href="./shared/theme.css?v=20261013-1"></head>
+<link rel="stylesheet" href="./shared/theme.css?v=20261013-1"><link rel="stylesheet" href="./shared/workspace.css?v=20261013-2"></head>
 <body>
 <div class="uv-shell">
 <header class="uv-topbar">
@@ -99,4 +99,4 @@ window.addEventListener("error",function(e){var l=document.getElementById("uv-lo
 window.addEventListener("unhandledrejection",function(e){var l=document.getElementById("uv-loading"),m=document.getElementById("uv-message");if(l)l.classList.add("hidden");if(m){m.classList.remove("hidden");m.textContent="No se pudo completar la carga: "+(e.reason&&e.reason.message?e.reason.message:String(e.reason||"error desconocido"))}});
 </script>
 <script type="module" src="./unified-viewer.js?v=20261004-2330"></script>
-<script src="./shared/navigation.js?v=20261013-1" defer></script></body></html>
+<script src="./shared/navigation.js?v=20261013-1" defer></script><script src="./shared/workspace.js?v=20261013-2" defer></script></body></html>
