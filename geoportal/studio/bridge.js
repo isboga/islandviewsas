@@ -129,10 +129,11 @@ async function initAuth(){const cfg=window.IV_AUTH_CONFIG||{};if(!cfg.enabled||!
 function showAuth(){els.account.textContent=session?"Sesión: "+(session.user?.email||"Autorizado"):"Acceso público · inicia sesión para proyectos privados";els.signout.hidden=!session;els.login.hidden=!!session}
 async function selectProject(id){const p=allProjects().find(x=>x.id===id);if(!p)return;project=p;selected.clear();assets=[];layers=[];annotations=[];els.selected.textContent=p.name;renderData();status("Cargando fuentes del proyecto…");
  const db=dbProjects.find(x=>x.slug===id);
- const jobs=[];
- if(p.dronedb&&isPublic(p))jobs.push(loadDroneDB(p).catch(e=>status("DroneDB: "+e.message,true)));
- if(db&&sb)jobs.push(loadAuthorized(db.id).catch(e=>status("Supabase: "+e.message,true)));
- await Promise.all(jobs);if(project!==p)return;renderData();status("Proyecto cargado. Selecciona los datos que deseas abrir o exportar.");
+ const jobs=[],issues=[];
+ if(p.dronedb&&isPublic(p))jobs.push(loadDroneDB(p).catch(e=>issues.push("DroneDB: "+e.message)));
+ if(db&&sb)jobs.push(Promise.race([loadAuthorized(db.id),new Promise((_,reject)=>setTimeout(()=>reject(Error("Tiempo de espera agotado (12 s)")),12000))]).catch(e=>issues.push("Supabase: "+e.message)));
+ await Promise.all(jobs);if(project!==p)return;renderData();
+ status(issues.length?"Carga parcial · "+issues.join(" · "):"Proyecto cargado. Selecciona los datos que deseas abrir o exportar.",issues.length>0);
  try{sessionStorage.setItem("iv-last-project",id)}catch{}
  const link=$("#iv-explorer-link");link.href="../dataset-explorer.html?project="+encodeURIComponent(id);
  const map=$("#iv-project-map");map.href="../dataset-explorer.html?project="+encodeURIComponent(id)+"&tab=map";
@@ -143,7 +144,7 @@ async function loadDroneDB(p){
  const queue=[""],seen=new Set(),results=[];let visited=0;
  while(queue.length&&visited<35&&results.length<180){const folder=queue.shift();if(seen.has(folder))continue;seen.add(folder);visited++;
  const form=new FormData();if(folder)form.append("path",folder);
- const resp=await fetch(base+"/list",{method:"POST",body:form,credentials:"omit"});if(!resp.ok)throw Error("Catálogo no disponible ("+resp.status+")");
+ const resp=await fetch(base+"/list",{method:"POST",body:form,credentials:"omit",signal:AbortSignal.timeout(10000)});if(!resp.ok)throw Error("Catálogo no disponible ("+resp.status+")");
  const entries=await resp.json();if(!Array.isArray(entries))throw Error("Respuesta inesperada");
  for(const e of entries){if(!e?.path||String(e.path).startsWith(".ddb"))continue;
   if(e.type===1||e.type===7){queue.push(e.path);continue}
