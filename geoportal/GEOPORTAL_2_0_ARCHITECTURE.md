@@ -226,3 +226,21 @@ Los nombres bajo NUEVO representan la **estructura objetivo**, no archivos ya cr
 **No implementado aún:** panel único de capas sincronizado entre motores, modelo de anotaciones unificado, sincronización RustGIS ↔ Supabase, interoperabilidad total de formatos, guardado automático, comparación multi-motor.
 
 **Verificación técnica:** los scripts modificados pasaron comprobación de sintaxis JavaScript. Es necesario hacer pruebas funcionales manuales en GitHub Pages, especialmente Safari/iPad, carga de datasets grandes, estados de inicio de mapa y exportación de polígonos de 3, 10 y 25 vértices.
+
+## Implementación — RustGIS conectado al catálogo de Island View (2026-10-13)
+
+**Entregado en código:**
+- `studio/index.html`, `studio/bridge.js`, `studio/bridge.css`: GIS Studio ahora muestra proyectos públicos de `projects.json` y proyectos que la sesión pueda consultar mediante `portal_projects` bajo RLS.
+- Si un proyecto público tiene un dataset DroneDB, Studio explora hasta 35 carpetas y 180 entradas compatibles (GeoJSON, JSON, CSV, TIFF, ASC y RGIS) y permite abrir hasta 16 archivos públicos en RustGIS mediante `?blank&data=...`.
+- Las capas vectoriales de `project_layers` / `project_features` y las anotaciones de `project_annotations` que autorice Supabase se pueden descargar como GeoJSON local. **Nunca** se colocan URL privadas ni tokens en la dirección de RustGIS.
+- El usuario puede importar un GeoJSON exportado desde RustGIS al proyecto seleccionado. Se crea una **nueva** capa con hasta 500 entidades (15 MB) mediante las políticas de edición RLS; no reemplaza información anterior.
+- `product-viewer.js` ahora dibuja las capas GIS autorizadas del proyecto y las anotaciones sobre el ortomosaico (colores distintos), con control de mostrar/ocultar en el panel compartido.
+- El panel Herramientas de los cuatro visores incluye acceso directo al GIS Studio del proyecto actual.
+
+**Limitaciones y verificaciones pendientes:**
+- RustGIS Web alojado externamente no tiene autenticación Supabase ni sincronización en tiempo real. Los datos privados se descargan y se importan manualmente en RustGIS mediante el selector de archivos.
+- La carga de archivos DroneDB por `?data=` depende de que su URL sea accesible y permita CORS; no se ha validado cada formato/archivo en un navegador real.
+- El catálogo de Studio solo lista proyectos privados que RLS permita consultar. Las tablas `project_layers` y `project_features` deben existir en el entorno Supabase y tener políticas correctas.
+- El guardado de resultados es una operación explícita; requiere sesión autorizada y geometrías GeoJSON en WGS84. Si falla la inserción, se intenta eliminar la capa vacía.
+- El visor de producto limita la consulta a 5000 entidades y 2000 anotaciones; paginación y sincronización por cambios quedan pendientes.
+- Validar funcionalmente en navegador, especialmente CORS DroneDB, login, permisos, importación y Safari/iPad. La comprobación de sintaxis no sustituye pruebas de integración.
