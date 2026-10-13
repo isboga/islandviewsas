@@ -132,6 +132,7 @@ function renderProjects(){
 }
 function showProject(id){
  const p=state.projects.find(x=>x.id===id);if(!p)return;
+ window.dispatchEvent(new CustomEvent("iv:project",{detail:{project:p.id}}));
  const rows=[["Ubicación",p.location],["Captura",p.captureDate],["Servicio",p.service],["Cliente",p.client],["Métodos",(p.methods||[]).join(", ")],["Equipos",(p.equipment||[]).join(", ")||"—"],["Productos",(p.products||[]).join(", ")],["Sistema de coordenadas",p.crs],["Acceso",p.access==="private"?"Privado · cliente":"Público"]];
  qs("#drawer-title").textContent=p.name;
  qs("#drawer-body").innerHTML='<p class="drawer-description">'+esc(p.description)+'</p><dl class="drawer-meta">'+rows.map(r=>'<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>').join("")+'</dl>'+(window.IVProductCenter?window.IVProductCenter.renderProjectProducts(p.id):"")+'<div class="drawer-actions"><button id="project-fly">Ubicar en mapa</button><button id="project-unified" class="primary">Abrir productos</button>'+(p.model?'<button id="project-model">Modelo 3D</button>':'')+'</div>';
