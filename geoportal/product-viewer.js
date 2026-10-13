@@ -140,4 +140,25 @@ function zoomBy(delta){if(map){map.zoomTo(map.getZoom()+delta,{duration:250});re
 function homeProduct(){if(map){const g=entry.polygon_geom;if(g)try{const bb=turf.bbox({type:"Feature",geometry:g,properties:{}});map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:55,maxZoom:20});return}catch{}map.flyTo({center:project?.coordinates||[-81.7006,12.5847],zoom:13,bearing:0,pitch:0});return}frameCommand("home")}
 $("#pv-search").oninput=renderFiles;$("#pv-info-btn").onclick=()=>$("#pv-info").classList.toggle("hidden");$("#pv-info-close").onclick=()=>$("#pv-info").classList.add("hidden");$("#pv-full").onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();$("#pv-full-map").onclick=$("#pv-full").onclick;$("#pv-files-open").onclick=()=>document.querySelector(".pv-shell").classList.add("files-open");$("#pv-files-toggle").onclick=()=>document.querySelector(".pv-shell").classList.remove("files-open");$("#pv-close").onclick=()=>location.href=backUrl;$("#pv-zoom-in").onclick=()=>zoomBy(1);$("#pv-zoom-out").onclick=()=>zoomBy(-1);const zoomToggle=$("#pv-zoom-toggle");zoomToggle.onclick=()=>{if(entry.type!==TYPES.POINTCLOUD)return;const z=document.querySelector(".pv-zoom"),collapsed=z.classList.toggle("is-collapsed");zoomToggle.setAttribute("aria-expanded",String(!collapsed));zoomToggle.title=collapsed?"Mostrar controles de zoom":"Minimizar controles de zoom";zoomToggle.setAttribute("aria-label",zoomToggle.title)};$("#pv-home").onclick=homeProduct;$("#pv-north").onclick=()=>{if(map)map.easeTo({bearing:0,pitch:0,duration:350});else frameCommand("north")};
 (async()=>{try{await loadProject();await resolveEntry();openProduct()}catch(e){fail(e)}})();
+
+// Exportar las mediciones creadas en el visor sin transmitir datos a terceros.
+// Se conserva la geometría en WGS84 y las unidades físicas en propiedades.
+window.addEventListener("iv:export-measure",()=>{
+ const mode=drawMode||lastMeasureMode;
+ const min=mode==="area"?3:2;
+ if(!["area","distance"].includes(mode)||coords.length<min){
+  status("Primero crea una medición de área o distancia para exportar");return;
+ }
+ try{
+  const feature=mode==="area"
+   ?turf.polygon([[...coords,coords[0]]],{tipo:"area",area_m2:turf.area(turf.polygon([[...coords,coords[0]]])),perimetro_m:turf.length(turf.lineString([...coords,coords[0]]),{units:"kilometers"})*1000})
+   :turf.lineString(coords,{tipo:"distancia",longitud_m:turf.length(turf.lineString(coords),{units:"kilometers"})*1000});
+  feature.properties={...feature.properties,producto:entry.path||"",proyecto:projectKey,crs:"EPSG:4326",vertices:coords.length};
+  const blob=new Blob([JSON.stringify(turf.featureCollection([feature]),null,2)],{type:"application/geo+json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="island-view-medicion-"+mode+".geojson";document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  status("Medición exportada en GeoJSON · "+coords.length+" vértices");
+ }catch(e){status("No se pudo exportar la medición: "+e.message)}
+});
 })();
