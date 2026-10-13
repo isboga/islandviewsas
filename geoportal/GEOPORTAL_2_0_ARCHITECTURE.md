@@ -244,3 +244,14 @@ Los nombres bajo NUEVO representan la **estructura objetivo**, no archivos ya cr
 - El guardado de resultados es una operación explícita; requiere sesión autorizada y geometrías GeoJSON en WGS84. Si falla la inserción, se intenta eliminar la capa vacía.
 - El visor de producto limita la consulta a 5000 entidades y 2000 anotaciones; paginación y sincronización por cambios quedan pendientes.
 - Validar funcionalmente en navegador, especialmente CORS DroneDB, login, permisos, importación y Safari/iPad. La comprobación de sintaxis no sustituye pruebas de integración.
+
+## Fase 3 · Gestor central y verificación de conectividad (2026-10-13)
+
+- Se añadió en GIS Studio un **gestor de capas por proyecto** con filtro, contador de entidades, exportación individual GeoJSON, edición autorizada de nombre y estilo (color/opacidad).
+- El visor de ortomosaicos ahora usa el color y opacidad guardados en `project_layers.style`, en vez de aplicar un color fijo a todas las capas. Actualizar el visor para recibir cambios.
+- GIS Studio dispone de un diagnóstico manual para catálogo público, Supabase y DroneDB; el estado de RustGIS se marca como enlace configurado, **no como prueba funcional de carga de datos**.
+- Las consultas a Supabase tienen un límite de espera para que el catálogo público siga siendo usable si el backend no responde.
+- Se creó `supabase/phase3_gis_schema_review.sql` como **propuesta no ejecutada** de tablas y políticas RLS para capas, entidades y anotaciones. Antes de aplicarla, revisar tablas y políticas ya existentes. No ejecutarla automáticamente.
+- **Bloqueo verificado:** el conector Supabase reportó `Island View Geoportal` (`aynkalsscfoftekakiky`) con estado `INACTIVE` el 2026-10-13; el intento de listar tablas falló por timeout. No se reactivó el proyecto, ni se ejecutaron migraciones, ni se alteraron datos.
+- **Pruebas realizadas:** sintaxis JavaScript válida, correspondencia de selectores DOM, referencias de scripts y persistencia de cambios GitHub.
+- **Pruebas pendientes:** ejecutar diagnóstico en navegador real; confirmar DroneDB/CORS y RustGIS `?data=`; verificar roles anónimo/viewer/editor, cambios de estilo y exportación/importación GeoJSON tras reactivar Supabase.
