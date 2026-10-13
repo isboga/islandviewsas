@@ -8,12 +8,12 @@ const catalog={
 explorer:[
 ["Navegación",[["Archivos","▤",'[data-tab="files"]'],["Mapa del proyecto","◫",'[data-tab="map"]'],["Capas visibles","▧","#db-map-layers-btn","map"],["Información","ⓘ",'[data-tab="info"]']]],
 ["Medición y análisis",[["Distancia","↔",'[data-gis="distance"]',"map"],["Área / polígono","⬡",'[data-gis="area"]',"map"],["Perfil","⌁",'[data-gis="profile"]',"map"],["Estadísticas ráster","▥",'[data-gis="stats"]',"map"]]],
-["Edición y archivos",[["Editor GIS","✎","#db-gis-editor-btn","map"],["Mediciones guardadas","◎","#db-map-annotations-btn","map"],["Comparador temporal","◧","#db-map-compare-btn","map"],["Importar capa","＋","#db-import-btn"],["Exportar capa","⇩","#db-gis-editor-btn","map"]]]
+["Edición y archivos",[["Editor GIS","✎","#db-gis-editor-btn","map"],["Mediciones guardadas","◎","#db-map-annotations-btn","map"],["Comparador temporal","◧","#db-map-compare-btn","map"],["Importar capa","＋","#db-import-btn"],["Editor / exportar capa","⇩","#db-gis-editor-btn","map"]]]
 ],
 product:[
 ["Navegación",[["Archivos","▤","#pv-files-open"],["Información y atributos","ⓘ","#pv-info-btn"],["Encuadrar","⌂","#pv-home"],["Pantalla completa","⛶","#pv-full"]]],
 ["Mediciones",[["Punto / consultar","⌖",'[data-tool="inspect"]'],["Distancia","↔",'[data-tool="distance"]'],["Área / polígono","⬡",'[data-tool="area"]'],["Análisis ráster","▥",'[data-tool="stats"]'],["Limpiar mediciones","⌫",'[data-tool="clear"]']]],
-["Productos",[["Descargar archivo","⇩","#pv-download"],["Abrir fuente original","↗","#pv-open-source"]]]
+["Productos",[["Exportar medición","⇩","iv:export-measure"],["Descargar archivo","↓","#pv-download"],["Abrir fuente original","↗","#pv-open-source"]]]
 ],
 scene:[
 ["Escena",[["Capas y productos","▧","#uv-collapse"],["Vista 2D","◫","#uv-2d"],["Vista 3D","◇","#uv-3d"],["Pantalla completa","⛶","#uv-full"]]],
@@ -41,11 +41,12 @@ for(const [group,items] of catalog[kind]){
   const name=document.createElement("span");name.textContent=label;b.append(glyph,name);
   b.addEventListener("click",()=>{
    const target=document.querySelector(selector);
-   if(!target){announce("La herramienta aún no está disponible.");return}
+   if(!target&&selector!=="iv:export-measure"){announce("La herramienta aún no está disponible.");return}
+   if(selector==="iv:export-measure"){window.dispatchEvent(new Event("iv:export-measure"));dismiss();return}
    if(kind==="explorer"&&needMap&&document.querySelector('[data-tab="map"]:not(.active)'))document.querySelector('[data-tab="map"]')?.click();
    if(selector==="#uv-collapse"){
     const side=document.querySelector(".uv-sidebar");
-    if(side&&getComputedStyle(side).display!=="none"&&!document.querySelector(".uv-shell")?.classList.contains("sidebar-collapsed")){announce("Panel de capas visible.");dismiss();return}
+    if(side&&getComputedStyle(side).display!=="none"&&!document.querySelector(".uv-shell")?.classList.contains("collapsed")){announce("Panel de capas visible.");dismiss();return}
    }
    if((selector==="#pv-download"||selector==="#pv-open-source")&&!target.getAttribute("href")){announce("El archivo aún no está listo.");return}
    target.click();announce(label+" · herramienta seleccionada");dismiss();
