@@ -83,12 +83,12 @@ begin
  if not exists (select 1 from pg_policies where schemaname='public' and tablename='project_features' and policyname='iv_features_public_read') then
   create policy iv_features_public_read on public.project_features for select to anon
    using (exists(select 1 from public.project_layers l join public.portal_projects p on p.id=l.project_id
-    where l.id=layer_id and l.project_id=project_id and l.visibility='public' and p.is_public));
+    where l.id=layer_id and l.project_id=project_features.project_id and l.visibility='public' and p.is_public));
  end if;
  if not exists (select 1 from pg_policies where schemaname='public' and tablename='project_features' and policyname='iv_features_member_read') then
   create policy iv_features_member_read on public.project_features for select to authenticated
    using (private.can_access_project(project_id) or exists(select 1 from public.project_layers l join public.portal_projects p on p.id=l.project_id
-    where l.id=layer_id and l.project_id=project_id and l.visibility='public' and p.is_public));
+    where l.id=layer_id and l.project_id=project_features.project_id and l.visibility='public' and p.is_public));
  end if;
  if not exists (select 1 from pg_policies where schemaname='public' and tablename='project_features' and policyname='iv_features_editor_insert') then
   create policy iv_features_editor_insert on public.project_features for insert to authenticated with check (private.can_edit_project(project_id));
