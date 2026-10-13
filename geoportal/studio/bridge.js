@@ -24,7 +24,7 @@ function geoFeatures(){const out=[];
  return out}
 function publicUrls(){return assets.filter(a=>selected.has("asset:"+a.path)).map(a=>a.url)}
 function updateButtons(){const u=publicUrls(),f=geoFeatures();els.publicBtn.disabled=!u.length;els.exportBtn.disabled=!f.length;els.summary.textContent=u.length+" archivos públicos · "+f.length+" geometrías autorizadas seleccionadas"}
-function cardCheck(key,title,meta,checked=false){const label=document.createElement("label");label.className="iv-data-item";const c=document.createElement("input");c.type="checkbox";c.checked=checked;c.addEventListener("change",()=>{c.checked?selected.add(key):selected.delete(key);updateButtons()});const info=document.createElement("span");const name=document.createElement("strong");name.textContent=title;const small=document.createElement("small");small.textContent=meta;info.append(name,small);label.append(c,info);return label}
+function cardCheck(key,title,meta,checked=false){const label=document.createElement("label");label.className="iv-data-item";const c=document.createElement("input");c.type="checkbox";c.checked=checked||selected.has(key);c.addEventListener("change",()=>{c.checked?selected.add(key):selected.delete(key);updateButtons()});const info=document.createElement("span");const name=document.createElement("strong");name.textContent=title;const small=document.createElement("small");small.textContent=meta;info.append(name,small);label.append(c,info);return label}
 function renderData(){els.layers.replaceChildren();if(!project){els.layers.textContent="Selecciona un proyecto.";return}
  const center=Array.isArray(project.coordinates)?project.coordinates:Array.isArray(project.center)?project.center:null;
  if(center?.length>=2&&center.every(Number.isFinite)){
