@@ -34,9 +34,9 @@ function initMap(){if(map)return;map=new maplibregl.Map({container:"pv-map",styl
 });$("#pv-map-tools").classList.remove("hidden");$("#pv-engine-label").textContent="GIS"}
 function ensureDraw(){if(drawSourceReady)return;
 map.addSource("pv-annotations",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
-map.addLayer({id:"pv-ann-fill",type:"fill",source:"pv-annotations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":["match",["get","iv_kind"],"work","#18a9c6","#ffb020"],"fill-opacity":.22}});
-map.addLayer({id:"pv-ann-line",type:"line",source:"pv-annotations",filter:["any",["==",["geometry-type"],"LineString"],["==",["geometry-type"],"Polygon"]],paint:{"line-color":["match",["get","iv_kind"],"work","#18a9c6","#ffb020"],"line-width":4,"line-opacity":.95}});
-map.addLayer({id:"pv-ann-points",type:"circle",source:"pv-annotations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":7,"circle-color":["match",["get","iv_kind"],"work","#18a9c6","#ffb020"],"circle-stroke-color":"#fff","circle-stroke-width":2.5}});
+map.addLayer({id:"pv-ann-fill",type:"fill",source:"pv-annotations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":["coalesce",["get","iv_color"],"#ffb020"],"fill-opacity":["coalesce",["get","iv_opacity"],.22]}});
+map.addLayer({id:"pv-ann-line",type:"line",source:"pv-annotations",filter:["any",["==",["geometry-type"],"LineString"],["==",["geometry-type"],"Polygon"]],paint:{"line-color":["coalesce",["get","iv_color"],"#ffb020"],"line-width":4,"line-opacity":.95}});
+map.addLayer({id:"pv-ann-points",type:"circle",source:"pv-annotations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":7,"circle-color":["coalesce",["get","iv_color"],"#ffb020"],"circle-stroke-color":"#fff","circle-stroke-width":2.5}});
 map.addSource("pv-draw",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
 map.addSource("pv-vertices",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
 map.addLayer({id:"pv-draw-fill",type:"fill",source:"pv-draw",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#f6b71e","fill-opacity":.12}});
@@ -55,15 +55,15 @@ async function loadSavedAnnotations(){
   if(pr.error||!pr.data?.id)return;portalProjectId=pr.data.id;
   const [ann,ls,fs]=await Promise.all([
    sb.from("project_annotations").select("id,annotation_type,title,geometry,measurement,visibility").eq("project_id",portalProjectId).limit(2000),
-   sb.from("project_layers").select("id,name").eq("project_id",portalProjectId).limit(200),
+   sb.from("project_layers").select("id,name,style").eq("project_id",portalProjectId).limit(200),
    sb.from("project_features").select("id,layer_id,name,geometry,properties").eq("project_id",portalProjectId).limit(5000)
   ]);
   if(ann.error)console.warn("Anotaciones",ann.error);
   if(ls.error)console.warn("Capas",ls.error);
   if(fs.error)console.warn("Entidades",fs.error);
   const features=(ann.data||[]).filter(a=>a.geometry?.type).map(a=>({type:"Feature",geometry:a.geometry,properties:{id:a.id,title:a.title||"",iv_kind:"annotation",annotation_type:a.annotation_type,visibility:a.visibility,...(a.measurement||{})}}));
-  const names=new Map((ls.data||[]).map(l=>[l.id,l.name]));
-  for(const f of fs.data||[])if(f.geometry?.type)features.push({type:"Feature",geometry:f.geometry,properties:{id:f.id,title:f.name||"",iv_kind:"work",layer:names.get(f.layer_id)||"Capa GIS",...(f.properties||{})}});
+  const layerIndex=new Map((ls.data||[]).map(l=>[l.id,l]));
+  for(const f of fs.data||[])if(f.geometry?.type)features.push({type:"Feature",geometry:f.geometry,properties:{...(f.properties||{}),id:f.id,title:f.name||"",iv_kind:"work",layer:layerIndex.get(f.layer_id)?.name||"Capa GIS",iv_color:/^#[0-9a-f]{6}$/i.test(layerIndex.get(f.layer_id)?.style?.color||"")?layerIndex.get(f.layer_id).style.color:"#18a9c6",iv_opacity:Math.min(1,Math.max(.05,Number(layerIndex.get(f.layer_id)?.style?.opacity??.55)))}});
   map.getSource("pv-annotations")?.setData({type:"FeatureCollection",features});
   bringOverlaysToFront();status(features.length+" geometrías del proyecto disponibles");
  }catch(e){console.warn("Capas del proyecto",e)}
