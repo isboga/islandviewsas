@@ -211,3 +211,18 @@ Los nombres bajo NUEVO representan la **estructura objetivo**, no archivos ya cr
 - RustGIS instalación web: https://github.com/opengeos/RustGIS/blob/main/docs/installation.md
 - RustGIS arquitectura: https://rustgis.app/architecture/
 - GeoLibre (referencia de enfoque web): https://github.com/opengeos/GeoLibre
+
+## Registro de implementación — 2026-10-13 (Fase 2, primera entrega)
+
+**Implementado en `main`:**
+- `shared/theme.css`, `shared/navigation.js`: identidad y navegación común.
+- `shared/workspace.css`, `shared/workspace.js`: panel común de herramientas, contextual por visor.
+- Panel conectado en `dataset-explorer.html`, `product-viewer.html`, `unified-viewer.html` y `pointcloud-viewer.html`.
+- El panel **delega** en los controles originales de MapLibre, Giro3D, Potree y explorador, sin crear una segunda lógica de medición.
+- El visor de producto permite exportar la medición actual (área o distancia) a **GeoJSON**, con geometría WGS84, número de vértices y área/perímetro/longitud en unidades SI.
+- El explorador permite entrar directamente a `?project=<slug>&tab=map`.
+- GIS Studio Beta abre RustGIS Web de forma externa; **no** tiene sincronización con Supabase.
+
+**No implementado aún:** panel único de capas sincronizado entre motores, modelo de anotaciones unificado, sincronización RustGIS ↔ Supabase, interoperabilidad total de formatos, guardado automático, comparación multi-motor.
+
+**Verificación técnica:** los scripts modificados pasaron comprobación de sintaxis JavaScript. Es necesario hacer pruebas funcionales manuales en GitHub Pages, especialmente Safari/iPad, carga de datasets grandes, estados de inicio de mapa y exportación de polígonos de 3, 10 y 25 vértices.
