@@ -14,16 +14,51 @@ h1{font-size:clamp(34px,5vw,54px);line-height:1.1;letter-spacing:-.05em;margin:1
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border-radius:10px;padding:0 20px;text-decoration:none;font-size:14px;font-weight:750;background:var(--iv-brand);color:#fff}.btn.secondary{background:#fff;color:var(--iv-deep);border:1px solid var(--iv-border)}
 .note{border-left:4px solid var(--iv-measure);background:#fff9e9;padding:16px 18px;border-radius:0 9px 9px 0;margin-top:34px;font-size:13px;line-height:1.6}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.back{display:none}}
-</style></head><body>
+</style><link rel="stylesheet" href="./bridge.css?v=20261013-2"></head><body>
 <header><a class="brand" href="../index.html"><span class="brand-icon">IV</span><span>ISLAND <span style="color:var(--iv-brand)">VIEW</span><small style="display:block;font-size:9px;letter-spacing:.15em;color:var(--iv-muted)">GEOSPATIAL PLATFORM</small></span></a><div class="iv-studio-actions"><a class="back" href="../index.html">← Geoportal</a></div></header>
-<main><div class="eyebrow">Herramientas profesionales · Acceso beta</div><h1>GIS Studio</h1>
-<p>Espacio de trabajo avanzado de Island View para edición de geometrías, atributos y análisis espacial. En esta fase evaluamos <strong>RustGIS Web</strong> sin reemplazar nuestros visores MapLibre, DroneDB, Potree ni Giro3D.</p>
-<div class="grid">
-<section class="tile"><div aria-hidden="true">⬡</div><h2>Edición vectorial</h2><p>Probar digitalización, edición de polígonos y atributos con datos públicos de demostración.</p></section>
-<section class="tile"><div aria-hidden="true">◫</div><h2>Geoprocesamiento</h2><p>Evaluar operaciones GIS disponibles en la edición web y exportaciones compatibles.</p></section>
-<section class="tile"><div aria-hidden="true">▧</div><h2>Integración futura</h2><p>Conectar proyectos y capas autorizadas tras validar APIs, seguridad y rendimiento.</p></section>
+<main>
+<div class="eyebrow">Island View SAS · GIS Studio</div>
+<h1>Conecta tus proyectos con RustGIS</h1>
+<p>Selecciona un proyecto, consulta sus capas geoespaciales autorizadas y prepara los datos para trabajar en RustGIS Web. Los archivos públicos pueden abrirse mediante enlace; las capas privadas se transfieren mediante un archivo local controlado.</p>
+<div class="iv-studio-grid">
+<section class="iv-studio-panel" aria-label="Proyecto y cuenta">
+<h2>01 · Proyecto activo</h2>
+<label for="iv-projects">Seleccionar proyecto</label>
+<select id="iv-projects" aria-label="Seleccionar proyecto"><option>Cargando proyectos…</option></select>
+<p>Proyecto seleccionado: <strong id="iv-selected-project">Cargando…</strong></p>
+<p><a id="iv-explorer-link" href="../dataset-explorer.html">Explorar archivos ↗</a> · <a id="iv-project-map" href="../dataset-explorer.html?tab=map">Abrir mapa ↗</a></p>
+<div class="iv-auth">
+<h3>Acceso a datos privados</h3>
+<div id="iv-account" class="iv-account">Comprobando sesión…</div>
+<div id="iv-login">
+<label for="iv-email">Correo electrónico</label><input id="iv-email" type="email" autocomplete="username" placeholder="Correo autorizado">
+<label for="iv-password">Contraseña</label><input id="iv-password" type="password" autocomplete="current-password" placeholder="Contraseña">
+<button id="iv-signin" type="button" style="margin-top:12px">Iniciar sesión</button>
 </div>
-<div class="actions"><a class="btn" href="https://web.rustgis.app/" target="_blank" rel="noopener noreferrer">Abrir RustGIS Web ↗</a><a class="btn secondary" href="../dataset-explorer.html" id="iv-explorer-link">Volver al explorador</a></div>
-<div class="note"><strong>Importante:</strong> RustGIS abre por ahora en un sitio externo. No comparte automáticamente la sesión de Island View, no carga tus proyectos privados y todavía no guarda ediciones en Supabase. Utiliza únicamente datos públicos o autorizados para pruebas.</div>
+<button id="iv-signout" type="button" hidden>Cerrar sesión</button>
+<p class="iv-small">Las capas privadas solo aparecen cuando Supabase autoriza tu sesión. RustGIS no recibe tu contraseña ni el token de acceso.</p>
+</div>
+</section>
+<section class="iv-studio-panel" aria-label="Capas del proyecto">
+<h2>02 · Datos y capas disponibles</h2>
+<p>Selecciona los archivos públicos y las geometrías de trabajo que deseas utilizar. Las anotaciones guardadas en el explorador también están disponibles cuando tienes permisos.</p>
+<div id="iv-layer-list" class="iv-data-list" aria-live="polite">Cargando fuentes geoespaciales…</div>
+<p class="iv-small" id="iv-data-summary">0 archivos públicos · 0 geometrías autorizadas</p>
+<div class="iv-studio-actions-grid">
+<button id="iv-open-public" type="button" disabled>Abrir archivos públicos en RustGIS ↗</button>
+<button id="iv-export" class="secondary" type="button" disabled>Descargar capas seleccionadas · GeoJSON</button>
+</div>
+<p class="iv-small">RustGIS acepta hasta 16 URL de datos por enlace. El servidor DroneDB debe permitir CORS. Los datos privados se descargan en tu dispositivo: después, impórtalos en RustGIS con <strong>Map → Add Data</strong> o arrastrando el GeoJSON.</p>
+</section>
+</div>
+<section class="iv-studio-panel" style="margin-top:20px" aria-label="Importación de resultados">
+<h2>03 · Devolver resultados de RustGIS a Island View</h2>
+<p>Exporta tu trabajo desde RustGIS como GeoJSON y vuelve a importarlo aquí. El resultado se guarda como una <strong>nueva capa editable</strong> del proyecto, sin sobrescribir capas anteriores. Requiere sesión con permiso de edición.</p>
+<div class="actions"><button id="iv-import" class="btn" type="button">Importar GeoJSON editado</button><input type="file" id="iv-import-file" accept=".geojson,.json,application/geo+json" hidden>
+<a class="btn secondary" href="https://web.rustgis.app/?blank" target="_blank" rel="noopener noreferrer">Abrir RustGIS vacío ↗</a></div>
+<p class="iv-small">Límite inicial: 15 MB y 500 entidades por importación. Coordenadas geográficas WGS84. Las políticas de acceso de Supabase determinan quién puede guardar.</p>
+</section>
+<div id="iv-studio-status" class="iv-studio-status" role="status" aria-live="polite">Inicializando catálogo de proyectos…</div>
+<div class="note"><strong>Seguridad:</strong> los datos privados no se incluyen en URL públicas ni se entregan automáticamente a terceros. La carga de archivos en RustGIS se realiza por decisión del usuario. Para ortomosaicos grandes y LiDAR se conservan los visores especializados de Island View.</div>
 </main><script>const p=new URLSearchParams(location.search).get("project");if(p&&/^[\w-]{1,100}$/.test(p))document.getElementById("iv-explorer-link").href="../dataset-explorer.html?project="+encodeURIComponent(p);</script>
-<script src="../shared/navigation.js?v=20261013-1" defer></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../auth-config.js"></script><script src="./bridge.js?v=20261013-2" defer></script><script src="../shared/navigation.js?v=20261013-1" defer></script></body></html>
