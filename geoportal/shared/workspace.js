@@ -8,18 +8,22 @@ const catalog={
 explorer:[
 ["Navegación",[["Archivos","▤",'[data-tab="files"]'],["Mapa del proyecto","◫",'[data-tab="map"]'],["Capas visibles","▧","#db-map-layers-btn","map"],["Información","ⓘ",'[data-tab="info"]']]],
 ["Medición y análisis",[["Distancia","↔",'[data-gis="distance"]',"map"],["Área / polígono","⬡",'[data-gis="area"]',"map"],["Perfil","⌁",'[data-gis="profile"]',"map"],["Estadísticas ráster","▥",'[data-gis="stats"]',"map"]]],
+["GIS Studio",[["Abrir RustGIS · proyecto","✣","iv:studio"]]],
 ["Edición y archivos",[["Editor GIS","✎","#db-gis-editor-btn","map"],["Mediciones guardadas","◎","#db-map-annotations-btn","map"],["Comparador temporal","◧","#db-map-compare-btn","map"],["Importar capa","＋","#db-import-btn"],["Editor / exportar capa","⇩","#db-gis-editor-btn","map"]]]
 ],
 product:[
 ["Navegación",[["Archivos","▤","#pv-files-open"],["Información y atributos","ⓘ","#pv-info-btn"],["Encuadrar","⌂","#pv-home"],["Pantalla completa","⛶","#pv-full"]]],
 ["Mediciones",[["Punto / consultar","⌖",'[data-tool="inspect"]'],["Distancia","↔",'[data-tool="distance"]'],["Área / polígono","⬡",'[data-tool="area"]'],["Análisis ráster","▥",'[data-tool="stats"]'],["Limpiar mediciones","⌫",'[data-tool="clear"]']]],
+["GIS Studio",[["Abrir RustGIS · proyecto","✣","iv:studio"]]],
 ["Productos",[["Exportar medición","⇩","iv:export-measure"],["Descargar archivo","↓","#pv-download"],["Abrir fuente original","↗","#pv-open-source"]]]
 ],
 scene:[
+["GIS Studio",[["Abrir RustGIS · proyecto","✣","iv:studio"]]],
 ["Escena",[["Capas y productos","▧","#uv-collapse"],["Vista 2D","◫","#uv-2d"],["Vista 3D","◇","#uv-3d"],["Pantalla completa","⛶","#uv-full"]]],
 ["Mediciones",[["Punto","⌖",'[data-draw="point"]'],["Distancia","↔",'[data-draw="line"]'],["Área / polígono","⬡",'[data-draw="polygon"]'],["Limpiar","⌫","#uv-clear"]]]
 ],
 cloud:[
+["GIS Studio",[["Abrir RustGIS · proyecto","✣","iv:studio"]]],
 ["Nube de puntos",[["Encuadrar","⌂","#pc-fit"],["Herramientas Potree","☷","#pc-potree-tools"],["Clasificación","▧","#pc-class-btn"],["Pantalla completa","⛶","#pc-full"]]],
 ["Mediciones 3D",[["Punto","⌖",'[data-tool="point"]'],["Distancia","↔",'[data-tool="distance"]'],["Área","⬡",'[data-tool="area"]'],["Altura","↕",'[data-tool="height"]'],["Perfil","⌁",'[data-tool="profile"]'],["Volumen","▤",'[data-tool="volume"]'],["Recorte 3D","□",'[data-tool="clip"]']]],
 ["Resultados",[["Exportar GeoJSON","⇩","#pc-export"],["Limpiar mediciones","⌫","#pc-clear"]]]
@@ -41,6 +45,13 @@ for(const [group,items] of catalog[kind]){
   const name=document.createElement("span");name.textContent=label;b.append(glyph,name);
   b.addEventListener("click",()=>{
    if(selector==="iv:export-measure"){window.dispatchEvent(new Event("iv:export-measure"));dismiss();return}
+   if(selector==="iv:studio"){
+    const params=new URLSearchParams(location.search);
+    let project=params.get("project");
+    if(!project)try{project=sessionStorage.getItem("iv-last-project")}catch{}
+    if(!project||!/^[a-zA-Z0-9_-]{1,100}$/.test(project))project="sai-dronedb";
+    location.href="./studio/index.html?project="+encodeURIComponent(project);return;
+   }
    const target=document.querySelector(selector);
    if(!target){announce("La herramienta aún no está disponible.");return}
    if(kind==="explorer"&&needMap&&document.querySelector('[data-tab="map"]:not(.active)'))document.querySelector('[data-tab="map"]')?.click();
