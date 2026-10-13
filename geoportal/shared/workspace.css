@@ -1,0 +1,20 @@
+/* Shared GIS workspace */
+.iv-workspace{display:inline-flex;align-items:center;position:relative;flex:none;z-index:109;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.iv-workspace-trigger{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 13px;border:1px solid #d8e3ea;border-radius:9px;background:#153b53;color:#fff;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer}
+.iv-workspace-trigger:hover,.iv-workspace-trigger[aria-expanded=true]{background:#117db4}
+.iv-workspace-trigger:focus-visible,.iv-workspace-action:focus-visible,.iv-workspace-close:focus-visible{outline:3px solid #18a9c6;outline-offset:2px}
+.iv-workspace-panel{position:fixed;top:var(--iv-workspace-top,70px);left:var(--iv-workspace-left,auto);z-index:9998;width:min(380px,calc(100vw - 20px));max-height:min(650px,calc(100dvh - 85px));display:flex;flex-direction:column;border:1px solid #d8e3ea;border-radius:14px;background:#fff;color:#1c3442;box-shadow:0 22px 65px rgba(12,35,48,.26);overflow:hidden;text-align:left}
+.iv-workspace-panel[hidden]{display:none!important}
+.iv-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px;border-bottom:1px solid #e6edf1}
+.iv-workspace-head>div{display:grid;gap:4px}.iv-workspace-head strong{font-size:15px}.iv-workspace-head small{font-size:11px;color:#607782}
+.iv-workspace-close{width:36px;height:36px;border:0;border-radius:9px;background:#eff5f8;color:#153b53;font-size:22px;cursor:pointer}
+.iv-workspace-body{overflow-y:auto;overscroll-behavior:contain;padding:10px 14px 16px}
+.iv-workspace-group h3{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#607782;margin:15px 0 10px}
+.iv-workspace-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.iv-workspace-action{min-height:50px;display:flex;align-items:center;gap:9px;border:1px solid #e0e9ed;border-radius:9px;background:#f7fafc;color:#1c3442;text-align:left;padding:8px 10px;cursor:pointer;font:650 12px/1.25 Inter,ui-sans-serif,system-ui,sans-serif}
+.iv-workspace-action:hover{background:#e8f5fa;border-color:#8ccde2}
+.iv-workspace-glyph{width:27px;height:27px;border-radius:7px;background:#e2eff5;color:#075f91;display:grid;place-items:center;flex:none;font-size:16px}
+.iv-workspace-foot{font-size:10px;color:#607782;padding:11px 15px;border-top:1px solid #e6edf1}
+.iv-workspace-live{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:1080px){.iv-workspace-trigger{width:42px;min-width:42px;padding:0;font-size:0}.iv-workspace-trigger::before{content:"⚒";font-size:19px}}
+@media(max-width:650px){.iv-workspace-panel{max-height:calc(100dvh - 80px)}}
