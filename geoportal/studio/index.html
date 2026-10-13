@@ -58,7 +58,20 @@ h1{font-size:clamp(34px,5vw,54px);line-height:1.1;letter-spacing:-.05em;margin:1
 <a class="btn secondary" href="https://web.rustgis.app/?blank" target="_blank" rel="noopener noreferrer">Abrir RustGIS vacío ↗</a></div>
 <p class="iv-small">Límite inicial: 15 MB y 500 entidades por importación. Coordenadas geográficas WGS84. Las políticas de acceso de Supabase determinan quién puede guardar.</p>
 </section>
+<section class="iv-studio-panel" style="margin-top:20px" aria-label="Gestor centralizado de capas">
+<h2>04 · Gestor centralizado de capas</h2>
+<p>Administra el nombre y el estilo de las capas GIS del proyecto. Los cambios autorizados se reflejarán en los visores que consultan las mismas capas de Supabase. La visibilidad de acceso público o privado no se modifica desde este panel.</p>
+<div class="iv-layer-controls"><label for="iv-layer-search">Buscar capas</label><input id="iv-layer-search" type="search" placeholder="Nombre de la capa o tipo…"><button id="iv-refresh-layers" type="button">Actualizar capas ↻</button></div>
+<div id="iv-manage-list" class="iv-manage-list" aria-live="polite">Selecciona un proyecto para gestionar sus capas.</div>
+<p class="iv-small">Cambiar nombre o estilo requiere permiso de editor. El gestor conserva los datos y no elimina geometrías.</p>
+</section>
+<section class="iv-studio-panel" style="margin-top:20px" aria-label="Diagnóstico de conectividad">
+<h2>05 · Diagnóstico de integración</h2>
+<p>Comprueba el catálogo público, la base de datos y el acceso al sitio RustGIS antes de trabajar con información de clientes.</p>
+<div class="actions"><button id="iv-test-connectivity" type="button" class="btn secondary">Comprobar conexiones</button></div>
+<div id="iv-health-results" class="iv-health-results" aria-live="polite">Pendiente de comprobación.</div>
+</section>
 <div id="iv-studio-status" class="iv-studio-status" role="status" aria-live="polite">Inicializando catálogo de proyectos…</div>
 <div class="note"><strong>Seguridad:</strong> los datos privados no se incluyen en URL públicas ni se entregan automáticamente a terceros. La carga de archivos en RustGIS se realiza por decisión del usuario. Para ortomosaicos grandes y LiDAR se conservan los visores especializados de Island View.</div>
 </main><script>const p=new URLSearchParams(location.search).get("project");if(p&&/^[\w-]{1,100}$/.test(p))document.getElementById("iv-explorer-link").href="../dataset-explorer.html?project="+encodeURIComponent(p);</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../auth-config.js"></script><script src="./bridge.js?v=20261013-3" defer></script><script src="../shared/navigation.js?v=20261013-1" defer></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../auth-config.js"></script><script src="./bridge.js?v=20261013-4" defer></script><script src="../shared/navigation.js?v=20261013-1" defer></script></body></html>
